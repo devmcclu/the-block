@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import type { Vehicle } from '@/stores/vehicles'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,11 +11,17 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel'
 
+const router = useRouter()
+
 const props = defineProps<{
   vehicle: Vehicle
 }>()
 
 const displayName = `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`
+
+function navigateToVehicle() {
+  router.push(`/vehicles/${props.vehicle.external_id}`)
+}
 
 function formatCurrency(amount: number | undefined) {
   if (amount == null) return ''
@@ -32,13 +39,9 @@ function formatOdometer(km: number | undefined) {
 </script>
 
 <template>
-  <RouterLink
-    :to="`/vehicles/${vehicle.external_id}`"
-    class="block outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-  >
-    <Card class="overflow-hidden transition-shadow hover:shadow-md h-full">
-      <!-- Image Carousel -->
-      <div class="relative" @click.stop>
+  <Card class="overflow-hidden transition-shadow hover:shadow-md h-full cursor-pointer">
+    <!-- Image Carousel -->
+    <div class="relative">
         <Carousel class="w-full">
           <CarouselContent>
             <CarouselItem v-for="(image, index) in vehicle.images" :key="index">
@@ -63,7 +66,7 @@ function formatOdometer(km: number | undefined) {
         </Carousel>
       </div>
 
-      <CardContent class="p-4 space-y-2">
+      <CardContent class="p-4 space-y-2" @click="navigateToVehicle">
         <h3 class="font-semibold text-sm leading-tight line-clamp-1">
           {{ displayName }}
         </h3>
@@ -86,7 +89,7 @@ function formatOdometer(km: number | undefined) {
         </div>
       </CardContent>
 
-      <CardFooter class="px-4 pb-4 pt-0 flex items-center justify-between">
+      <CardFooter class="px-4 pb-4 pt-0 flex items-center justify-between" @click="navigateToVehicle">
         <div>
           <p class="text-sm font-semibold">
             {{ formatCurrency(vehicle.current_bid) }}
@@ -102,6 +105,5 @@ function formatOdometer(km: number | undefined) {
           </p>
         </div>
       </CardFooter>
-    </Card>
-  </RouterLink>
+  </Card>
 </template>
