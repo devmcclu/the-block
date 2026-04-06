@@ -1,0 +1,24 @@
+{
+  "name": "the-block",
+  "version": "1.0.0",
+  "description": "the-block",
+  "homepage": "https://github.com/devmcclu/the-block",
+  "bugs": {
+    "url": "https://github.com/worldbeybladeorg/events-manager/issues"
+  },
+  "license": "ISC",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devmcclu/the-block.git"
+  },
+  "scripts": {
+    "start": "npm-run-all --parallel backend frontend",
+    "dev": "npm run start",
+    "backend": "cd backend && air -c .air.toml",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "devDependencies": {
+    "npm-run-all2": "^8.0.4"
+  }
+}
