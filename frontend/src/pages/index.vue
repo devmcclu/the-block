@@ -8,7 +8,7 @@ import VehicleGrid from '@/components/search/VehicleGrid.vue'
 import MobileFilterSheet from '@/components/search/MobileFilterSheet.vue'
 
 const store = useVehiclesStore()
-const { vehicles, filters, loading } = storeToRefs(store)
+const { vehicles, loading } = storeToRefs(store)
 
 const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300)
 
@@ -16,7 +16,7 @@ onMounted(async () => {
   await Promise.all([store.fetchFilterOptions(), store.fetchVehicles()])
 })
 
-watch(filters, () => debouncedFetch(), { deep: true })
+watch(() => store.filters, () => debouncedFetch(), { deep: true })
 </script>
 
 <template>
