@@ -80,3 +80,39 @@ type VehicleUpdate struct {
 	CurrentBid *int `json:"current_bid"`
 	BidCount   *int `json:"bid_count"`
 }
+
+type VehicleFilter struct {
+	YearMin         *int
+	YearMax         *int
+	Makes           []string
+	Models          []string
+	BodyStyles      []string
+	ExteriorColors  []string
+	InteriorColors  []string
+	Transmissions   []string
+	Drivetrains     []string
+	FuelTypes       []string
+	TitleStatuses   []string
+	OdometerMin     *int
+	OdometerMax     *int
+	ConditionMin    *float64
+	ConditionMax    *float64
+}
+
+type VehicleFilterOptions struct {
+	YearMin        int      `json:"year_min"`
+	YearMax        int      `json:"year_max"`
+	Makes          []string `json:"makes"`
+	Models         []string `json:"models"`
+	BodyStyles     []string `json:"body_styles"`
+	ExteriorColors []string `json:"exterior_colors"`
+	InteriorColors []string `json:"interior_colors"`
+	Transmissions  []string `json:"transmissions"`
+	Drivetrains    []string `json:"drivetrains"`
+	FuelTypes      []string `json:"fuel_types"`
+	TitleStatuses  []string `json:"title_statuses"`
+	OdometerMin    int      `json:"odometer_min"`
+	OdometerMax    int      `json:"odometer_max"`
+	ConditionMin   float64  `json:"condition_min"`
+	ConditionMax   float64  `json:"condition_max"`
+}

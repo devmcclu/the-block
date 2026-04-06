@@ -34,11 +34,11 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/about': RouteRecordInfo<
-      '/about',
-      '/about',
-      Record<never, never>,
-      Record<never, never>,
+    '/vehicles/[id]': RouteRecordInfo<
+      '/vehicles/[id]',
+      '/vehicles/:id',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
       | never
     >,
   }
@@ -60,9 +60,9 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'src/pages/about.vue': {
+    'src/pages/vehicles/[id].vue': {
       routes:
-        | '/about'
+        | '/vehicles/[id]'
       views:
         | never
     }
