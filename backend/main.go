@@ -1,22 +1,31 @@
 package main
 
 import (
-	"github.com/devmcclu/the-block/backend/domains/cars"
+	"log"
+
+	"github.com/devmcclu/the-block/backend/database"
+	"github.com/devmcclu/the-block/backend/domains/vehicles"
 	"github.com/go-fuego/fuego"
 )
 
 func main() {
-	s := fuego.NewServer()
-
-	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
-		return "Hello, World!", nil
-	})
-
-	carResourses := cars.CarsResources{
-		CarsService: cars.RealCarsService{},
+	db, err := database.InitDB("vehicles.db")
+	if err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
 	}
 
-	carResourses.Routes(s)
+	if err := database.SeedIfEmpty(db, "vehicles.json"); err != nil {
+		log.Fatalf("failed to seed database: %v", err)
+	}
 
-	s.Run()
+	s := fuego.NewServer()
+
+	vehicleResources := vehicles.VehiclesResources{
+		VehiclesService: vehicles.RealVehiclesService{DB: db},
+	}
+	vehicleResources.Routes(s)
+
+	if err := s.Run(); err != nil {
+		log.Fatalf("server error: %v", err)
+	}
 }

@@ -1,1 +1,4 @@
 tmp
+*.db
+backend
+vehicles.json
