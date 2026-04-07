@@ -22,9 +22,9 @@ const loading = ref(true)
 
 function formatCurrency(amount: number | undefined | null) {
   if (amount == null) return ''
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'CAD',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(amount)
 }
@@ -52,7 +52,7 @@ onMounted(async () => {
 
     <!-- Loading -->
     <div v-if="loading" class="space-y-6">
-      <Skeleton class="aspect-[16/9] w-full rounded-lg" />
+      <Skeleton class="aspect-video w-full rounded-lg" />
       <Skeleton class="h-8 w-2/3" />
       <Skeleton class="h-4 w-1/3" />
     </div>
@@ -62,7 +62,7 @@ onMounted(async () => {
       <Carousel class="w-full mb-6">
         <CarouselContent>
           <CarouselItem v-for="(image, index) in vehicle.images" :key="index">
-            <div class="aspect-[16/9] overflow-hidden rounded-lg bg-muted">
+            <div class="aspect-video overflow-hidden rounded-lg bg-muted">
               <img
                 :src="image.url"
                 :alt="`Photo ${index + 1}`"
