@@ -24,12 +24,7 @@ const inputClass =
 </script>
 
 <template>
-  <input
-    v-if="!lazy"
-    v-model="modelValue"
-    data-slot="input"
-    :class="cn(inputClass, props.class)"
-  />
+  <input v-if="!lazy" v-model="modelValue" data-slot="input" :class="cn(inputClass, props.class)" />
   <input
     v-else
     data-slot="input"

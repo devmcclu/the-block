@@ -47,7 +47,11 @@ onMounted(async () => {
       error.value = "Vehicle ID is missing";
       return;
     }
-    const { data, error: fetchError, response } = await api.GET("/vehicles/{id}", {
+    const {
+      data,
+      error: fetchError,
+      response,
+    } = await api.GET("/vehicles/{id}", {
       params: { path: { id } },
     });
     if (fetchError) {
