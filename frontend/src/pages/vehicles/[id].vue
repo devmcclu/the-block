@@ -40,17 +40,26 @@ const bidLabel = computed(() => {
 });
 
 onMounted(async () => {
-  await loadAuctionConfig();
-  const id = route.params.id;
-  const { data, error: fetchError } = await api.GET("/vehicles/{id}", {
-    params: { path: { id } },
-  });
-  if (fetchError) {
+  try {
+    await loadAuctionConfig();
+    const id = route.params.id;
+    if (!id) {
+      error.value = "Vehicle ID is missing";
+      return;
+    }
+    const { data, error: fetchError, response } = await api.GET("/vehicles/{id}", {
+      params: { path: { id } },
+    });
+    if (fetchError) {
+      error.value = response?.status === 404 ? "Vehicle not found" : "Unable to connect to server";
+    } else if (data) {
+      vehicle.value = data;
+    }
+  } catch {
     error.value = "Unable to connect to server";
-  } else if (data) {
-    vehicle.value = data;
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 });
 </script>
 

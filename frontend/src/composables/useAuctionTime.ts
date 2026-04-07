@@ -8,10 +8,13 @@ export function loadAuctionConfig() {
     configPromise = (async () => {
       const { api } = await import('@/lib/api/client')
       const { data } = await api.GET('/vehicles/config')
-      if (data?.max_auction_duration_hours) {
+      if (data?.max_auction_duration_hours !== undefined) {
         MAX_AUCTION_DURATION_HOURS.value = data.max_auction_duration_hours
       }
-    })()
+    })().catch((err) => {
+      configPromise = null
+      throw err
+    })
   }
   return configPromise
 }
