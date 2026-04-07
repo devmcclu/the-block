@@ -34,7 +34,6 @@ A buyer should be able to browse inventory, inspect vehicle details, and place b
 - If you want to align with our current web stack, a React + Vite setup is a good fit. Tailwind is also a reasonable choice, but none of these are required.
 - You may use AI tools and coding assistants, and their use is encouraged. Be ready to explain how you used them, what decisions you made, and what parts of the implementation you would refine.
 - Authentication and user accounts are **not required**.
-- A frontend-only implementation is completely acceptable.
 - You do **not** need to build seller workflows, checkout, payments, or dealer admin tooling.
 - Auction timestamps in the dataset are synthetic scheduling data. If you want to show countdowns or "live" states, it's fine to normalize them relative to "now" in your prototype.
 - Make reasonable product decisions, document your assumptions, and optimize for clarity over surface area.

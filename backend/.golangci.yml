@@ -1,0 +1,12 @@
+version: "2"
+
+linters:
+  default: standard
+
+formatters:
+  enable:
+    - goimports
+    - gofumpt
+  settings:
+    gofumpt:
+      module-path: github.com/devmcclu/the-block/backend
