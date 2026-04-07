@@ -42,7 +42,9 @@ type jsonVehicle struct {
 
 func SeedIfEmpty(db *gorm.DB, jsonPath string) error {
 	var count int64
-	db.Model(&Vehicle{}).Count(&count)
+	if err := db.Model(&Vehicle{}).Count(&count).Error; err != nil {
+		return fmt.Errorf("counting vehicles: %w", err)
+	}
 	if count > 0 {
 		return nil
 	}
