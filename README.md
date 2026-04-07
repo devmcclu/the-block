@@ -12,6 +12,7 @@
 ### Manual setup
 
 - Install [Node.js 24 or newer](https://nodejs.org/en/download/) and [go 1.26 or newer](https://go.dev/dl/)
+- Install [air](https://github.com/air-verse/air) for go dev server
 - Run `npm run prepare` to install dependencies
 - Run `npm run dev` to start dev server with backend and frontend services
 
