@@ -1,13 +1,16 @@
 package vehicles
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
+	"gorm.io/gorm"
 )
 
 // maxAuctionDurationHours is the fixed duration for all auctions (30 days).
@@ -58,6 +61,23 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 	fuego.Get(vehiclesGroup, "/{id}", rs.getVehicle)
 	fuego.Put(vehiclesGroup, "/{id}", rs.putVehicle)
 	fuego.Delete(vehiclesGroup, "/{id}", rs.deleteVehicle)
+}
+
+// mapServiceErr translates domain/DB errors into fuego HTTP errors.
+func mapServiceErr(err error, context string) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
+	}
+	if strings.HasPrefix(err.Error(), "bid of ") {
+		return fuego.ConflictError{Detail: err.Error()}
+	}
+	return fuego.HTTPError{
+		Err:    fmt.Errorf("%s: %w", context, err),
+		Detail: "an internal error occurred",
+	}
 }
 
 func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Vehicle, error) {
@@ -150,7 +170,11 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid sort value: %s", filters.Sort)}
 	}
 
-	return rs.VehiclesService.GetAllVehicles(filters)
+	vehicles, err := rs.VehiclesService.GetAllVehicles(filters)
+	if err != nil {
+		return nil, mapServiceErr(err, "list vehicles")
+	}
+	return vehicles, nil
 }
 
 func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionConfig, error) {
@@ -158,7 +182,11 @@ func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionCo
 }
 
 func (rs VehiclesResources) getFilterOptions(c fuego.ContextNoBody) (database.VehicleFilterOptions, error) {
-	return rs.VehiclesService.GetFilterOptions()
+	opts, err := rs.VehiclesService.GetFilterOptions()
+	if err != nil {
+		return database.VehicleFilterOptions{}, mapServiceErr(err, "get filter options")
+	}
+	return opts, nil
 }
 
 func (rs VehiclesResources) postVehicle(c fuego.ContextWithBody[database.VehicleCreate]) (database.Vehicle, error) {
@@ -167,13 +195,21 @@ func (rs VehiclesResources) postVehicle(c fuego.ContextWithBody[database.Vehicle
 		return database.Vehicle{}, err
 	}
 
-	return rs.VehiclesService.CreateVehicle(body)
+	vehicle, err := rs.VehiclesService.CreateVehicle(body)
+	if err != nil {
+		return database.Vehicle{}, mapServiceErr(err, "create vehicle")
+	}
+	return vehicle, nil
 }
 
 func (rs VehiclesResources) getVehicle(c fuego.ContextNoBody) (database.Vehicle, error) {
 	id := c.PathParam("id")
 
-	return rs.VehiclesService.GetVehicle(id)
+	vehicle, err := rs.VehiclesService.GetVehicle(id)
+	if err != nil {
+		return database.Vehicle{}, mapServiceErr(err, fmt.Sprintf("get vehicle %s", id))
+	}
+	return vehicle, nil
 }
 
 func (rs VehiclesResources) putVehicle(c fuego.ContextWithBody[database.VehicleUpdate]) (database.Vehicle, error) {
@@ -184,9 +220,17 @@ func (rs VehiclesResources) putVehicle(c fuego.ContextWithBody[database.VehicleU
 		return database.Vehicle{}, err
 	}
 
-	return rs.VehiclesService.UpdateVehicle(id, body)
+	vehicle, err := rs.VehiclesService.UpdateVehicle(id, body)
+	if err != nil {
+		return database.Vehicle{}, mapServiceErr(err, fmt.Sprintf("update vehicle %s", id))
+	}
+	return vehicle, nil
 }
 
 func (rs VehiclesResources) deleteVehicle(c fuego.ContextNoBody) (any, error) {
-	return rs.VehiclesService.DeleteVehicle(c.PathParam("id"))
+	result, err := rs.VehiclesService.DeleteVehicle(c.PathParam("id"))
+	if err != nil {
+		return nil, mapServiceErr(err, fmt.Sprintf("delete vehicle %s", c.PathParam("id")))
+	}
+	return result, nil
 }
