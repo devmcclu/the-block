@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { watch, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router/auto";
 import { storeToRefs } from "pinia";
-import { useVehiclesStore } from "@/stores/vehicles";
+import { useVehiclesStore, type VehicleFilters } from "@/stores/vehicles";
 import { useDebounceFn } from "@vueuse/core";
 import SearchFilters from "@/components/search/SearchFilters.vue";
 import VehicleGrid from "@/components/search/VehicleGrid.vue";
@@ -15,10 +16,71 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const route = useRoute();
+const router = useRouter();
 const store = useVehiclesStore();
 const { vehicles, sort, loading } = storeToRefs(store);
 
-const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300);
+const arrayKeys: { filter: keyof VehicleFilters; param: string }[] = [
+  { filter: "makes", param: "make" },
+  { filter: "models", param: "model" },
+  { filter: "bodyStyles", param: "body_style" },
+  { filter: "exteriorColors", param: "exterior_color" },
+  { filter: "interiorColors", param: "interior_color" },
+  { filter: "transmissions", param: "transmission" },
+  { filter: "drivetrains", param: "drivetrain" },
+  { filter: "fuelTypes", param: "fuel_type" },
+  { filter: "titleStatuses", param: "title_status" },
+];
+
+const numericKeys: { filter: keyof VehicleFilters; param: string }[] = [
+  { filter: "yearMin", param: "year_min" },
+  { filter: "yearMax", param: "year_max" },
+  { filter: "odometerMin", param: "odometer_min" },
+  { filter: "odometerMax", param: "odometer_max" },
+  { filter: "conditionMin", param: "condition_min" },
+  { filter: "conditionMax", param: "condition_max" },
+];
+
+function loadFromQuery() {
+  const q = route.query;
+  for (const { filter, param } of arrayKeys) {
+    const val = q[param];
+    if (typeof val === "string" && val) {
+      (store.filters[filter] as string[]).splice(0, Infinity, ...val.split(","));
+    }
+  }
+  for (const { filter, param } of numericKeys) {
+    const val = q[param];
+    if (typeof val === "string" && val) {
+      (store.filters as Record<string, number | undefined>)[filter] = Number(val);
+    }
+  }
+  if (typeof q.sort === "string" && q.sort) {
+    sort.value = q.sort;
+  }
+}
+
+function syncToQuery() {
+  const query: Record<string, string> = {};
+  for (const { filter, param } of arrayKeys) {
+    const arr = store.filters[filter] as string[];
+    if (arr.length) query[param] = arr.join(",");
+  }
+  for (const { filter, param } of numericKeys) {
+    const val = (store.filters as Record<string, number | undefined>)[filter];
+    if (val != null) query[param] = String(val);
+  }
+  if (sort.value) query.sort = sort.value;
+  router.replace({ query });
+}
+
+const debouncedFetch = useDebounceFn(() => {
+  store.fetchVehicles();
+  syncToQuery();
+}, 300);
+
+loadFromQuery();
 
 onMounted(async () => {
   await Promise.allSettled([
@@ -33,7 +95,10 @@ watch(
   () => debouncedFetch(),
   { deep: true },
 );
-watch(sort, () => store.fetchVehicles());
+watch(sort, () => {
+  store.fetchVehicles();
+  syncToQuery();
+});
 </script>
 
 <template>
