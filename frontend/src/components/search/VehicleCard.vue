@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useAuctionTime } from "@/composables/useAuctionTime";
+import { formatCurrency, formatOdometer } from "@/lib/format";
 
 const router = useRouter();
 
@@ -25,19 +26,6 @@ function navigateToVehicle() {
   router.push(`/vehicles/${props.vehicle.external_id}`);
 }
 
-function formatCurrency(amount: number | undefined) {
-  if (amount == null) return "";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatOdometer(km: number | undefined) {
-  if (km == null) return "";
-  return `${km.toLocaleString()} km`;
-}
 </script>
 
 <template>

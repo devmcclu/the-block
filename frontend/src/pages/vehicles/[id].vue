@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/carousel";
 import { Icon } from "@iconify/vue";
 import { useAuctionTime, loadAuctionConfig } from "@/composables/useAuctionTime";
+import { formatCurrency, formatOdometer } from "@/lib/format";
 
 const route = useRoute("/vehicles/[id]");
 const vehicle = ref<Vehicle | null>(null);
@@ -36,15 +37,6 @@ const bidLabel = computed(() => {
   if (!ended.value) return "Current Bid";
   return reserveMet.value ? "Final Price" : "Final Bid";
 });
-
-function formatCurrency(amount: number | undefined | null) {
-  if (amount == null) return "";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 onMounted(async () => {
   await loadAuctionConfig();
@@ -138,7 +130,7 @@ onMounted(async () => {
             <Separator />
             <div class="flex justify-between">
               <dt class="text-muted-foreground">Odometer</dt>
-              <dd>{{ vehicle.odometer_km?.toLocaleString() }} km</dd>
+              <dd>{{ formatOdometer(vehicle.odometer_km) }}</dd>
             </div>
             <Separator />
             <div class="flex justify-between">

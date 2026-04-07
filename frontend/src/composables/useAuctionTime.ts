@@ -1,16 +1,19 @@
 import { type MaybeRefOrGetter, toValue, ref, computed, onUnmounted } from 'vue'
 
 const MAX_AUCTION_DURATION_HOURS = ref<number | null>(null)
-let configLoaded = false
+let configPromise: Promise<void> | null = null
 
-export async function loadAuctionConfig() {
-  if (configLoaded) return
-  const { api } = await import('@/lib/api/client')
-  const { data } = await api.GET('/vehicles/config')
-  if (data?.max_auction_duration_hours) {
-    MAX_AUCTION_DURATION_HOURS.value = data.max_auction_duration_hours
+export function loadAuctionConfig() {
+  if (!configPromise) {
+    configPromise = (async () => {
+      const { api } = await import('@/lib/api/client')
+      const { data } = await api.GET('/vehicles/config')
+      if (data?.max_auction_duration_hours) {
+        MAX_AUCTION_DURATION_HOURS.value = data.max_auction_duration_hours
+      }
+    })()
   }
-  configLoaded = true
+  return configPromise
 }
 
 export function useAuctionTime(
