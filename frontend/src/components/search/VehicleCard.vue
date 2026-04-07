@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { computed } from "vue";
 import { useAuctionTime } from "@/composables/useAuctionTime";
 import { formatCurrency, formatOdometer } from "@/lib/format";
 
@@ -19,7 +20,9 @@ const props = defineProps<{
   vehicle: Vehicle;
 }>();
 
-const displayName = `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`;
+const displayName = computed(
+  () => `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`,
+);
 const { ended, timeRemaining } = useAuctionTime(props.vehicle.auction_start);
 
 function navigateToVehicle() {
