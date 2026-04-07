@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 const store = useVehiclesStore()
@@ -33,51 +33,14 @@ const hasActiveFilters = computed(() => {
   )
 })
 
-const yearMin = computed(() => filterOptions.value.year_min ?? 2000)
-const yearMax = computed(() => filterOptions.value.year_max ?? 2025)
-const odometerMinOpt = computed(() => filterOptions.value.odometer_min ?? 0)
-const odometerMaxOpt = computed(() => filterOptions.value.odometer_max ?? 300000)
-const conditionMinOpt = computed(() => filterOptions.value.condition_min ?? 1)
-const conditionMaxOpt = computed(() => filterOptions.value.condition_max ?? 5)
-
-const yearRange = computed({
-  get: () => [filters.yearMin ?? yearMin.value, filters.yearMax ?? yearMax.value],
-  set: (val: number[]) => {
-    filters.yearMin = val[0] === yearMin.value ? undefined : val[0]
-    filters.yearMax = val[1] === yearMax.value ? undefined : val[1]
-  },
-})
-
-const odometerRange = computed({
-  get: () => [
-    filters.odometerMin ?? odometerMinOpt.value,
-    filters.odometerMax ?? odometerMaxOpt.value,
-  ],
-  set: (val: number[]) => {
-    filters.odometerMin = val[0] === odometerMinOpt.value ? undefined : val[0]
-    filters.odometerMax = val[1] === odometerMaxOpt.value ? undefined : val[1]
-  },
-})
-
-const conditionRange = computed({
-  get: () => [
-    filters.conditionMin ?? conditionMinOpt.value,
-    filters.conditionMax ?? conditionMaxOpt.value,
-  ],
-  set: (val: number[]) => {
-    filters.conditionMin = val[0] === conditionMinOpt.value ? undefined : val[0]
-    filters.conditionMax = val[1] === conditionMaxOpt.value ? undefined : val[1]
-  },
-})
-
 const availableModels = computed(() => {
   if (!filterOptions.value.models) return []
   return filterOptions.value.models
 })
 
-function formatOdometer(km: number | undefined) {
-  if (km == null) return ''
-  return `${(km / 1000).toFixed(0)}k km`
+function parseNumber(value: string): number | undefined {
+  const n = Number(value)
+  return value === '' || Number.isNaN(n) ? undefined : n
 }
 
 type ArrayFilterKey =
@@ -109,12 +72,22 @@ function isChecked(key: ArrayFilterKey, value: string) {
       <Separator />
 
       <!-- Year Range -->
-      <div class="space-y-3">
+      <div class="space-y-2">
         <Label class="text-sm font-medium">Year</Label>
-        <Slider v-model="yearRange" :min="yearMin" :max="yearMax" :step="1" />
-        <div class="flex justify-between text-xs text-muted-foreground">
-          <span>{{ yearRange[0] }}</span>
-          <span>{{ yearRange[1] }}</span>
+        <div class="flex items-center gap-2">
+          <Input
+            type="number"
+            :placeholder="String(filterOptions.year_min ?? 'Min')"
+            :model-value="filters.yearMin"
+            @update:model-value="filters.yearMin = parseNumber(String($event))"
+          />
+          <span class="text-xs text-muted-foreground">to</span>
+          <Input
+            type="number"
+            :placeholder="String(filterOptions.year_max ?? 'Max')"
+            :model-value="filters.yearMax"
+            @update:model-value="filters.yearMax = parseNumber(String($event))"
+          />
         </div>
       </div>
 
@@ -261,12 +234,22 @@ function isChecked(key: ArrayFilterKey, value: string) {
       <Separator />
 
       <!-- Odometer Range -->
-      <div class="space-y-3">
-        <Label class="text-sm font-medium">Odometer</Label>
-        <Slider v-model="odometerRange" :min="odometerMinOpt" :max="odometerMaxOpt" :step="5000" />
-        <div class="flex justify-between text-xs text-muted-foreground">
-          <span v-if="odometerRange[0]">{{ formatOdometer(odometerRange[0]) }}</span>
-          <span v-if="odometerRange[1]">{{ formatOdometer(odometerRange[1]) }}</span>
+      <div class="space-y-2">
+        <Label class="text-sm font-medium">Odometer (km)</Label>
+        <div class="flex items-center gap-2">
+          <Input
+            type="number"
+            :placeholder="String(filterOptions.odometer_min ?? 'Min')"
+            :model-value="filters.odometerMin"
+            @update:model-value="filters.odometerMin = parseNumber(String($event))"
+          />
+          <span class="text-xs text-muted-foreground">to</span>
+          <Input
+            type="number"
+            :placeholder="String(filterOptions.odometer_max ?? 'Max')"
+            :model-value="filters.odometerMax"
+            @update:model-value="filters.odometerMax = parseNumber(String($event))"
+          />
         </div>
       </div>
 
@@ -293,17 +276,24 @@ function isChecked(key: ArrayFilterKey, value: string) {
       <Separator />
 
       <!-- Condition Grade Range -->
-      <div class="space-y-3">
+      <div class="space-y-2">
         <Label class="text-sm font-medium">Condition Grade</Label>
-        <Slider
-          v-model="conditionRange"
-          :min="conditionMinOpt"
-          :max="conditionMaxOpt"
-          :step="0.1"
-        />
-        <div class="flex justify-between text-xs text-muted-foreground">
-          <span>{{ conditionRange[0]?.toFixed(1) }}</span>
-          <span>{{ conditionRange[1]?.toFixed(1) }}</span>
+        <div class="flex items-center gap-2">
+          <Input
+            type="number"
+            step="0.1"
+            :placeholder="String(filterOptions.condition_min ?? 'Min')"
+            :model-value="filters.conditionMin"
+            @update:model-value="filters.conditionMin = parseNumber(String($event))"
+          />
+          <span class="text-xs text-muted-foreground">to</span>
+          <Input
+            type="number"
+            step="0.1"
+            :placeholder="String(filterOptions.condition_max ?? 'Max')"
+            :model-value="filters.conditionMax"
+            @update:model-value="filters.conditionMax = parseNumber(String($event))"
+          />
         </div>
       </div>
 
