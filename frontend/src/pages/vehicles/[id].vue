@@ -25,7 +25,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Icon } from "@iconify/vue";
-import { useAuctionTime, loadAuctionConfig, getMinBidIncrement } from "@/composables/useAuctionTime";
+import {
+  useAuctionTime,
+  loadAuctionConfig,
+  getMinBidIncrement,
+} from "@/composables/useAuctionTime";
 import { formatCurrency, formatOdometer } from "@/lib/format";
 import { toast } from "vue-sonner";
 
@@ -407,9 +411,7 @@ onMounted(async () => {
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Place a Bid</DialogTitle>
-          <DialogDescription>
-            Enter your bid for this vehicle.
-          </DialogDescription>
+          <DialogDescription> Enter your bid for this vehicle. </DialogDescription>
         </DialogHeader>
 
         <div v-if="vehicle" class="space-y-4 py-2">
@@ -427,8 +429,8 @@ onMounted(async () => {
             <div class="min-w-0">
               <p class="font-semibold truncate">{{ vehicleName }}</p>
               <p class="text-sm text-muted-foreground">
-                Current bid: {{ formatCurrency(vehicle.current_bid) }}
-                &middot; {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
+                Current bid: {{ formatCurrency(vehicle.current_bid) }} &middot;
+                {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
               </p>
             </div>
           </div>
@@ -489,9 +491,7 @@ onMounted(async () => {
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Buy Now</DialogTitle>
-          <DialogDescription>
-            Complete your purchase of this vehicle.
-          </DialogDescription>
+          <DialogDescription> Complete your purchase of this vehicle. </DialogDescription>
         </DialogHeader>
 
         <div v-if="vehicle" class="space-y-4 py-2">

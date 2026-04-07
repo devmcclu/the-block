@@ -47,10 +47,7 @@ function formatRelativeTime(iso: string) {
     </div>
 
     <div v-else class="space-y-1">
-      <div
-        v-for="(bid, index) in bids"
-        :key="`${bid.vehicleId}-${bid.bidTime}`"
-      >
+      <div v-for="(bid, index) in bids" :key="`${bid.vehicleId}-${bid.bidTime}`">
         <RouterLink
           :to="`/vehicles/${bid.vehicleId}`"
           class="flex items-center justify-between py-3 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors"

@@ -38,7 +38,6 @@ const timeClass = computed(() => {
   }
 });
 
-
 function navigateToVehicle() {
   router.push(`/vehicles/${props.vehicle.external_id}`);
 }
