@@ -73,41 +73,49 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 		TitleStatuses:  c.QueryParamArr("title_status"),
 	}
 
-	if v, err := c.QueryParamIntErr("year_min"); err != nil {
-		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid year_min: %s", err)}
-	} else if v != 0 {
-		if v < 1900 || v > 2100 {
-			return nil, fuego.BadRequestError{Detail: "year_min must be between 1900 and 2100"}
+	if c.QueryParam("year_min") != "" {
+		if v, err := c.QueryParamIntErr("year_min"); err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid year_min: %s", err)}
+		} else {
+			if v < 1900 || v > 2100 {
+				return nil, fuego.BadRequestError{Detail: "year_min must be between 1900 and 2100"}
+			}
+			filters.YearMin = &v
 		}
-		filters.YearMin = &v
 	}
-	if v, err := c.QueryParamIntErr("year_max"); err != nil {
-		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid year_max: %s", err)}
-	} else if v != 0 {
-		if v < 1900 || v > 2100 {
-			return nil, fuego.BadRequestError{Detail: "year_max must be between 1900 and 2100"}
+	if c.QueryParam("year_max") != "" {
+		if v, err := c.QueryParamIntErr("year_max"); err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid year_max: %s", err)}
+		} else {
+			if v < 1900 || v > 2100 {
+				return nil, fuego.BadRequestError{Detail: "year_max must be between 1900 and 2100"}
+			}
+			filters.YearMax = &v
 		}
-		filters.YearMax = &v
 	}
 	if filters.YearMin != nil && filters.YearMax != nil && *filters.YearMin > *filters.YearMax {
 		return nil, fuego.BadRequestError{Detail: "year_min must not exceed year_max"}
 	}
 
-	if v, err := c.QueryParamIntErr("odometer_min"); err != nil {
-		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid odometer_min: %s", err)}
-	} else if v != 0 {
-		if v < 0 {
-			return nil, fuego.BadRequestError{Detail: "odometer_min must not be negative"}
+	if c.QueryParam("odometer_min") != "" {
+		if v, err := c.QueryParamIntErr("odometer_min"); err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid odometer_min: %s", err)}
+		} else {
+			if v < 0 {
+				return nil, fuego.BadRequestError{Detail: "odometer_min must not be negative"}
+			}
+			filters.OdometerMin = &v
 		}
-		filters.OdometerMin = &v
 	}
-	if v, err := c.QueryParamIntErr("odometer_max"); err != nil {
-		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid odometer_max: %s", err)}
-	} else if v != 0 {
-		if v < 0 {
-			return nil, fuego.BadRequestError{Detail: "odometer_max must not be negative"}
+	if c.QueryParam("odometer_max") != "" {
+		if v, err := c.QueryParamIntErr("odometer_max"); err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid odometer_max: %s", err)}
+		} else {
+			if v < 0 {
+				return nil, fuego.BadRequestError{Detail: "odometer_max must not be negative"}
+			}
+			filters.OdometerMax = &v
 		}
-		filters.OdometerMax = &v
 	}
 	if filters.OdometerMin != nil && filters.OdometerMax != nil && *filters.OdometerMin > *filters.OdometerMax {
 		return nil, fuego.BadRequestError{Detail: "odometer_min must not exceed odometer_max"}

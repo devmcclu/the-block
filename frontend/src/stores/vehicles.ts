@@ -55,32 +55,32 @@ export const useVehiclesStore = defineStore("vehicles", () => {
   async function fetchFilterOptions() {
     try {
       const { data, error: err } = await api.GET("/vehicles/filters");
-      if (err) {
-        error.value = "Unable to connect to server";
-        return;
-      }
-      error.value = null;
+      if (err) return;
       if (data) {
         filterOptions.value = data;
       }
     } catch {
-      error.value = "Unable to connect to server";
+      // filter fetch failure is non-critical; don't overwrite shared error
     }
   }
 
+  let latestFetchId = 0;
+
   async function fetchVehicles() {
+    const fetchId = ++latestFetchId;
     loading.value = true;
     error.value = null;
 
     const params: Record<string, unknown> = {};
 
-    // Only include range params when min <= max (skip the pair if inverted)
-    const yearOk =
-      filters.yearMin == null || filters.yearMax == null || filters.yearMin <= filters.yearMax;
-    if (yearOk) {
-      if (filters.yearMin != null) params.year_min = filters.yearMin;
-      if (filters.yearMax != null) params.year_max = filters.yearMax;
+    // Normalize inverted ranges by swapping min/max
+    let yearMin = filters.yearMin;
+    let yearMax = filters.yearMax;
+    if (yearMin != null && yearMax != null && yearMin > yearMax) {
+      [yearMin, yearMax] = [yearMax, yearMin];
     }
+    if (yearMin != null) params.year_min = yearMin;
+    if (yearMax != null) params.year_max = yearMax;
 
     if (filters.makes.length) params.make = filters.makes;
     if (filters.models.length) params.model = filters.models;
@@ -92,23 +92,21 @@ export const useVehiclesStore = defineStore("vehicles", () => {
     if (filters.fuelTypes.length) params.fuel_type = filters.fuelTypes;
     if (filters.titleStatuses.length) params.title_status = filters.titleStatuses;
 
-    const odometerOk =
-      filters.odometerMin == null ||
-      filters.odometerMax == null ||
-      filters.odometerMin <= filters.odometerMax;
-    if (odometerOk) {
-      if (filters.odometerMin != null) params.odometer_min = filters.odometerMin;
-      if (filters.odometerMax != null) params.odometer_max = filters.odometerMax;
+    let odometerMin = filters.odometerMin;
+    let odometerMax = filters.odometerMax;
+    if (odometerMin != null && odometerMax != null && odometerMin > odometerMax) {
+      [odometerMin, odometerMax] = [odometerMax, odometerMin];
     }
+    if (odometerMin != null) params.odometer_min = odometerMin;
+    if (odometerMax != null) params.odometer_max = odometerMax;
 
-    const conditionOk =
-      filters.conditionMin == null ||
-      filters.conditionMax == null ||
-      filters.conditionMin <= filters.conditionMax;
-    if (conditionOk) {
-      if (filters.conditionMin != null) params.condition_min = String(filters.conditionMin);
-      if (filters.conditionMax != null) params.condition_max = String(filters.conditionMax);
+    let conditionMin = filters.conditionMin;
+    let conditionMax = filters.conditionMax;
+    if (conditionMin != null && conditionMax != null && conditionMin > conditionMax) {
+      [conditionMin, conditionMax] = [conditionMax, conditionMin];
     }
+    if (conditionMin != null) params.condition_min = String(conditionMin);
+    if (conditionMax != null) params.condition_max = String(conditionMax);
 
     if (sort.value) params.sort = sort.value;
 
@@ -116,15 +114,19 @@ export const useVehiclesStore = defineStore("vehicles", () => {
       const { data, error: err } = await api.GET("/vehicles/", {
         params: { query: params as Record<string, never> },
       });
+      if (fetchId !== latestFetchId) return;
       if (err) {
         error.value = "Unable to connect to server";
       } else {
         vehicles.value = data ?? [];
       }
     } catch {
+      if (fetchId !== latestFetchId) return;
       error.value = "Unable to connect to server";
     } finally {
-      loading.value = false;
+      if (fetchId === latestFetchId) {
+        loading.value = false;
+      }
     }
   }
 
