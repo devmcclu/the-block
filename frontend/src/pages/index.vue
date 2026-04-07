@@ -6,6 +6,7 @@ import { useDebounceFn } from "@vueuse/core";
 import SearchFilters from "@/components/search/SearchFilters.vue";
 import VehicleGrid from "@/components/search/VehicleGrid.vue";
 import MobileFilterSheet from "@/components/search/MobileFilterSheet.vue";
+import { loadAuctionConfig } from "@/composables/useAuctionTime";
 import {
   Select,
   SelectContent,
@@ -20,7 +21,7 @@ const { vehicles, sort, loading } = storeToRefs(store);
 const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300);
 
 onMounted(async () => {
-  await Promise.all([store.fetchFilterOptions(), store.fetchVehicles()]);
+  await Promise.all([loadAuctionConfig(), store.fetchFilterOptions(), store.fetchVehicles()]);
 });
 
 watch(

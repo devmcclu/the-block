@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/lib/api/client";
 import type { Vehicle } from "@/stores/vehicles";
@@ -15,10 +15,27 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Icon } from "@iconify/vue";
+import { useAuctionTime, loadAuctionConfig } from "@/composables/useAuctionTime";
 
 const route = useRoute("/vehicles/[id]");
 const vehicle = ref<Vehicle | null>(null);
 const loading = ref(true);
+
+const auctionStart = computed(() => vehicle.value?.auction_start);
+const { ended, timeRemaining } = useAuctionTime(auctionStart, true);
+
+const reserveMet = computed(() => {
+  if (!vehicle.value) return false;
+  return (
+    vehicle.value.reserve_price == null ||
+    (vehicle.value.current_bid ?? 0) >= vehicle.value.reserve_price
+  );
+});
+
+const bidLabel = computed(() => {
+  if (!ended.value) return "Current Bid";
+  return reserveMet.value ? "Final Price" : "Final Bid";
+});
 
 function formatCurrency(amount: number | undefined | null) {
   if (amount == null) return "";
@@ -30,6 +47,7 @@ function formatCurrency(amount: number | undefined | null) {
 }
 
 onMounted(async () => {
+  await loadAuctionConfig();
   const id = route.params.id;
   const { data } = await api.GET("/vehicles/{id}", {
     params: { path: { id } },
@@ -151,11 +169,23 @@ onMounted(async () => {
             <h2 class="text-lg font-semibold mb-3">Auction</h2>
             <dl class="space-y-2 text-sm">
               <div class="flex justify-between">
-                <dt class="text-muted-foreground">Current Bid</dt>
+                <dt class="text-muted-foreground">Time Remaining</dt>
+                <dd class="font-semibold" :class="ended ? 'text-destructive' : ''">
+                  {{ timeRemaining }}
+                </dd>
+              </div>
+              <Separator />
+              <div class="flex justify-between">
+                <dt class="text-muted-foreground">{{ bidLabel }}</dt>
                 <dd class="font-semibold text-base">
                   {{ formatCurrency(vehicle.current_bid) }}
                 </dd>
               </div>
+              <template v-if="ended && !reserveMet">
+                <p class="text-xs text-destructive">
+                  Reserve price not met — auction ended without a sale.
+                </p>
+              </template>
               <Separator />
               <div class="flex justify-between">
                 <dt class="text-muted-foreground">Bids</dt>
@@ -172,7 +202,7 @@ onMounted(async () => {
                 <dd>{{ formatCurrency(vehicle.reserve_price) }}</dd>
               </div>
               <Separator v-if="vehicle.reserve_price" />
-              <div v-if="vehicle.buy_now_price" class="flex justify-between">
+              <div v-if="!ended && vehicle.buy_now_price" class="flex justify-between">
                 <dt class="text-muted-foreground">Buy Now Price</dt>
                 <dd class="font-semibold">
                   {{ formatCurrency(vehicle.buy_now_price) }}

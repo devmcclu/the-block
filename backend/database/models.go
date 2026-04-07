@@ -100,6 +100,10 @@ type VehicleFilter struct {
 	Sort            string
 }
 
+type AuctionConfig struct {
+	MaxAuctionDurationHours int `json:"max_auction_duration_hours"`
+}
+
 type VehicleFilterOptions struct {
 	YearMin        int      `json:"year_min"`
 	YearMax        int      `json:"year_max"`

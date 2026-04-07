@@ -36,6 +36,7 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 	)
 	fuego.Post(vehiclesGroup, "/", rs.postVehicle)
 
+	fuego.Get(vehiclesGroup, "/config", rs.getConfig)
 	fuego.Get(vehiclesGroup, "/filters", rs.getFilterOptions)
 
 	fuego.Get(vehiclesGroup, "/{id}", rs.getVehicle)
@@ -82,6 +83,10 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 	filters.Sort = c.QueryParam("sort")
 
 	return rs.VehiclesService.GetAllVehicles(filters)
+}
+
+func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionConfig, error) {
+	return database.AuctionConfig{MaxAuctionDurationHours: 720}, nil
 }
 
 func (rs VehiclesResources) getFilterOptions(c fuego.ContextNoBody) (database.VehicleFilterOptions, error) {

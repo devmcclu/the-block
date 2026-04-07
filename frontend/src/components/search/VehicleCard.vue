@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useAuctionTime } from "@/composables/useAuctionTime";
 
 const router = useRouter();
 
@@ -18,6 +19,7 @@ const props = defineProps<{
 }>();
 
 const displayName = `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`;
+const { ended, timeRemaining } = useAuctionTime(props.vehicle.auction_start);
 
 function navigateToVehicle() {
   router.push(`/vehicles/${props.vehicle.external_id}`);
@@ -98,10 +100,15 @@ function formatOdometer(km: number | undefined) {
           {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
         </p>
       </div>
-      <div v-if="vehicle.buy_now_price" class="text-right">
-        <p class="text-xs text-muted-foreground">Buy Now</p>
-        <p class="text-sm font-medium">
-          {{ formatCurrency(vehicle.buy_now_price) }}
+      <div class="text-right">
+        <p v-if="!ended && vehicle.buy_now_price" class="text-xs text-muted-foreground">
+          Buy Now {{ formatCurrency(vehicle.buy_now_price) }}
+        </p>
+        <p
+          class="text-xs font-medium"
+          :class="ended ? 'text-destructive' : 'text-muted-foreground'"
+        >
+          {{ timeRemaining }}
         </p>
       </div>
     </CardFooter>
