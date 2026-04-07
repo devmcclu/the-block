@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
 import ModeToggle from "@/components/ModeToggle.vue";
+import "vue-sonner/style.css";
 import { Toaster } from "@/components/ui/sonner";
 </script>
 
