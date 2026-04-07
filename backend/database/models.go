@@ -31,8 +31,8 @@ type Vehicle struct {
 	Lot               string         `json:"lot"`
 	CurrentBid        int            `json:"current_bid"`
 	BidCount          int            `json:"bid_count"`
-	DamageNotes       []DamageNote   `json:"damage_notes" gorm:"foreignKey:VehicleID"`
-	Images            []VehicleImage `json:"images" gorm:"foreignKey:VehicleID"`
+	DamageNotes       []DamageNote   `json:"damage_notes" gorm:"foreignKey:VehicleID;constraint:OnDelete:CASCADE"`
+	Images            []VehicleImage `json:"images" gorm:"foreignKey:VehicleID;constraint:OnDelete:CASCADE"`
 }
 
 type DamageNote struct {
@@ -82,22 +82,22 @@ type VehicleUpdate struct {
 }
 
 type VehicleFilter struct {
-	YearMin         *int
-	YearMax         *int
-	Makes           []string
-	Models          []string
-	BodyStyles      []string
-	ExteriorColors  []string
-	InteriorColors  []string
-	Transmissions   []string
-	Drivetrains     []string
-	FuelTypes       []string
-	TitleStatuses   []string
-	OdometerMin     *int
-	OdometerMax     *int
-	ConditionMin    *float64
-	ConditionMax    *float64
-	Sort            string
+	YearMin        *int
+	YearMax        *int
+	Makes          []string
+	Models         []string
+	BodyStyles     []string
+	ExteriorColors []string
+	InteriorColors []string
+	Transmissions  []string
+	Drivetrains    []string
+	FuelTypes      []string
+	TitleStatuses  []string
+	OdometerMin    *int
+	OdometerMax    *int
+	ConditionMin   *float64
+	ConditionMax   *float64
+	Sort           string
 }
 
 type AuctionConfig struct {
