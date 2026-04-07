@@ -265,8 +265,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('fuelTypes', fuel!)"
-              @update:model-value="store.toggleFilter('fuelTypes', fuel!)"
+              :model-value="isChecked('fuelTypes', fuel)"
+              @update:model-value="store.toggleFilter('fuelTypes', fuel)"
             />
             <span class="text-sm capitalize">{{ fuel }}</span>
           </label>
