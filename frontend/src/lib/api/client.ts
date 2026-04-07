@@ -5,7 +5,7 @@ export const api = createClient<paths>({ baseUrl: "/api" });
 
 api.use({
   async onResponse({ response }) {
-    if (!response.ok && response.headers.get("Content-Length") !== "0") {
+    if (!response.ok) {
       const body = await response.clone().text();
       if (!body) {
         return new Response(JSON.stringify({ detail: response.statusText || "Request failed" }), {
