@@ -66,5 +66,15 @@ export function useAuctionTime(auctionStart: MaybeRefOrGetter<string | undefined
     return `${minutes}m ${seconds}s`;
   });
 
-  return { ended, timeRemaining };
+  const urgency = computed<"normal" | "warning" | "urgent" | "ended">(() => {
+    if (ended.value) return "ended";
+    if (auctionEnd.value == null) return "normal";
+    const diff = auctionEnd.value - now.value;
+    const oneHour = 1000 * 60 * 60;
+    if (diff <= oneHour) return "urgent";
+    if (diff <= oneHour * 24) return "warning";
+    return "normal";
+  });
+
+  return { ended, timeRemaining, urgency };
 }

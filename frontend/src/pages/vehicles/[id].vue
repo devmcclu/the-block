@@ -36,7 +36,21 @@ const notFound = ref(false);
 const error = ref<string | null>(null);
 
 const auctionStart = computed(() => vehicle.value?.auction_start);
-const { ended, timeRemaining } = useAuctionTime(auctionStart, true);
+const { ended, timeRemaining, urgency } = useAuctionTime(auctionStart, true);
+
+const timeClass = computed(() => {
+  switch (urgency.value) {
+    case "ended":
+      return "text-destructive";
+    case "urgent":
+      return "text-destructive";
+    case "warning":
+      return "text-warning";
+    default:
+      return "";
+  }
+});
+
 const minBidIncrement = getMinBidIncrement();
 const bidsStore = useBidsStore();
 
@@ -296,7 +310,7 @@ onMounted(async () => {
             <dl class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <dt class="text-muted-foreground">Time Remaining</dt>
-                <dd class="font-semibold" :class="ended ? 'text-destructive' : ''">
+                <dd class="font-semibold" :class="timeClass">
                   {{ timeRemaining }}
                 </dd>
               </div>
@@ -347,7 +361,7 @@ onMounted(async () => {
               <Button
                 v-if="vehicle.buy_now_price != null"
                 class="w-full"
-                variant="secondary"
+                variant="outline"
                 @click="buyNowOpen = true"
               >
                 <Icon icon="hugeicons:shopping-bag-02" class="h-4 w-4 mr-2" />
@@ -423,7 +437,7 @@ onMounted(async () => {
 
           <!-- Success State -->
           <div v-if="bidSuccess" class="text-center space-y-3 py-2">
-            <Icon icon="hugeicons:checkmark-circle-02" class="mx-auto h-10 w-10 text-green-500" />
+            <Icon icon="hugeicons:checkmark-circle-02" class="mx-auto h-10 w-10 text-success" />
             <div>
               <p class="font-semibold">Bid placed successfully</p>
               <p class="text-sm text-muted-foreground">
