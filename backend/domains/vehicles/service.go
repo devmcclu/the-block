@@ -13,6 +13,9 @@ import (
 // ErrBidTooLow is returned when a bid does not exceed the current highest bid.
 var ErrBidTooLow = errors.New("bid not higher than current bid")
 
+// ErrAuctionEnded is returned when a bid is placed after the auction has ended.
+var ErrAuctionEnded = errors.New("auction has ended")
+
 type VehiclesService interface {
 	GetVehicle(id string) (database.Vehicle, error)
 	GetAllVehicles(filters database.VehicleFilter) ([]database.Vehicle, error)
@@ -210,27 +213,35 @@ func (s RealVehiclesService) UpdateVehicle(id string, input database.VehicleUpda
 			return err
 		}
 
-		auctionStart, err := time.Parse("2006-01-02T15:04:05", vehicle.AuctionStart)
+		auctionStart, err := time.ParseInLocation("2006-01-02T15:04:05", vehicle.AuctionStart, time.UTC)
 		if err != nil {
 			return fmt.Errorf("invalid auction_start: %w", err)
 		}
 		auctionEnd := auctionStart.Add(time.Duration(s.MaxAuctionDurationHours) * time.Hour)
-		if time.Now().After(auctionEnd) {
-			return fmt.Errorf("auction has ended")
+		if time.Now().UTC().After(auctionEnd) {
+			return fmt.Errorf("%w: auction ended at %s", ErrAuctionEnded, auctionEnd.Format(time.RFC3339))
 		}
 
+		if input.BidAmount == nil || *input.BidAmount <= 0 {
+			return fmt.Errorf("%w: bid amount must be greater than 0", ErrBidTooLow)
+		}
+
+		bidAmount := *input.BidAmount
 		minBid := vehicle.StartingBid
 		if vehicle.BidCount > 0 {
 			minBid = vehicle.CurrentBid + s.MinBidIncrement
 		}
-		if input.BidAmount < minBid {
-			return fmt.Errorf("bid of %d is below the minimum of %d", input.BidAmount, minBid)
+		if bidAmount < minBid {
+			return fmt.Errorf("%w: bid of %d is below the minimum of %d", ErrBidTooLow, bidAmount, minBid)
 		}
 
-		result := tx.Model(&vehicle).Updates(map[string]any{
-			"current_bid": input.BidAmount,
+		result := tx.Model(&vehicle).Where("current_bid = ?", vehicle.CurrentBid).Updates(map[string]any{
+			"current_bid": bidAmount,
 			"bid_count":   gorm.Expr("bid_count + 1"),
 		})
+		if result.RowsAffected == 0 && result.Error == nil {
+			return fmt.Errorf("%w: another bid was placed concurrently, please retry", ErrBidTooLow)
+		}
 		if result.Error != nil {
 			return result.Error
 		}

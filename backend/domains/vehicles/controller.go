@@ -6,7 +6,6 @@ import (
 	"math"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/go-fuego/fuego"
@@ -75,7 +74,7 @@ func mapServiceErr(err error, context string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
 	}
-	if errors.Is(err, ErrBidTooLow) || strings.HasPrefix(err.Error(), "auction has ended") {
+	if errors.Is(err, ErrBidTooLow) || errors.Is(err, ErrAuctionEnded) {
 		return fuego.ConflictError{Detail: err.Error()}
 	}
 	return fuego.HTTPError{
