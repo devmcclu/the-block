@@ -21,7 +21,7 @@ I spent approximately 8 hours on this project.
 
 ## Assumptions and Scope
 
-This program is a mock of what the experience might be like for a user who is logged in. Since there is no authentication, all endpoints are public. This simulates a search page, vehicle info page, and views for placing a bid or buying a vehicle with a history on bids/purchases. This does not handle inventory management, but it does simulate bid increasing and purchase logic in the form of mock UIs and simple endpoints.
+This program is a prototype of what the experience might be like for a user who is logged in. Since there is no authentication, all endpoints are public. This simulates a search page, vehicle info page, and views for placing a bid or buying a vehicle with a history on bids/purchases. This does not handle inventory management, but it does simulate bid increasing and purchase logic in the form of mock UIs and simple endpoints.
 
 ## Stack
 
@@ -56,3 +56,5 @@ I would add more test to make sure that features and UI work, especially in more
 Documentation of backend API endpoints could also be improved, as we could embed them in the OpenAPI spec using Fuego. This would help consumers understand the API better and what the expectations are besides input and output schemas.
 
 Migrating to a fullstack framework like Nuxt could give some nice to have features such as SSR, a robust module/plugin system, and using Backend-for-frontend archecture to slim down API requests from the backend if we aren't the ones in control of the API we are consuming. These might introduce latency issues, which is not ideal if you are trying to have bidding be instant, so there are tradeoffs to consider.
+
+Logging is very minimal, and should be improved for better error tracing.
