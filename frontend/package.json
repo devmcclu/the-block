@@ -17,7 +17,6 @@
     "generate:types": "openapi-typescript ../backend/doc/openapi.json -o src/lib/api/v1.d.ts"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.2",
     "@vueuse/core": "^14.2.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -33,6 +32,7 @@
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.25",
+    "@tailwindcss/vite": "^4.2.2",
     "@iconify/vue": "^5.0.0",
     "@tsconfig/node24": "^24.0.4",
     "@types/jsdom": "^28.0.1",
