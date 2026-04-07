@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { Icon } from "@iconify/vue";
-import { useColorMode } from "@vueuse/core";
-import { Button } from "@/components/ui/button";
+import { Icon } from '@iconify/vue'
+import { useColorMode } from '@vueuse/core'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 
 // Pass { disableTransition: false } to enable transitions
-const mode = useColorMode();
+const mode = useColorMode()
 </script>
 
 <template>

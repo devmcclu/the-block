@@ -48,6 +48,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   const vehicles = ref<Vehicle[]>([])
   const filterOptions = ref<VehicleFilterOptions>({})
   const filters = reactive<VehicleFilters>(emptyFilters())
+  const sort = ref<string>('')
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -78,6 +79,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     if (filters.odometerMax != null) params.odometer_max = filters.odometerMax
     if (filters.conditionMin != null) params.condition_min = String(filters.conditionMin)
     if (filters.conditionMax != null) params.condition_max = String(filters.conditionMax)
+    if (sort.value) params.sort = sort.value
 
     try {
       const { data, error: err } = await api.GET('/vehicles/', {
@@ -127,6 +129,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     vehicles,
     filterOptions,
     filters,
+    sort,
     loading,
     error,
     fetchFilterOptions,

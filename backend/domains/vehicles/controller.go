@@ -32,6 +32,7 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 		option.QueryInt("odometer_max", "Maximum odometer (km)"),
 		option.Query("condition_min", "Minimum condition grade"),
 		option.Query("condition_max", "Maximum condition grade"),
+		option.Query("sort", "Sort order: price_asc, price_desc, year_desc, year_asc"),
 	)
 	fuego.Post(vehiclesGroup, "/", rs.postVehicle)
 
@@ -77,6 +78,8 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 			filters.ConditionMax = &v
 		}
 	}
+
+	filters.Sort = c.QueryParam("sort")
 
 	return rs.VehiclesService.GetAllVehicles(filters)
 }

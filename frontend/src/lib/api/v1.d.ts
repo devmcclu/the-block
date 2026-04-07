@@ -291,6 +291,8 @@ export interface operations {
                 condition_min?: string;
                 /** @description Maximum condition grade */
                 condition_max?: string;
+                /** @description Sort order: price_asc, price_desc, year_desc, year_asc */
+                sort?: string;
             };
             header?: {
                 Accept?: string;

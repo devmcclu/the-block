@@ -97,6 +97,7 @@ type VehicleFilter struct {
 	OdometerMax     *int
 	ConditionMin    *float64
 	ConditionMax    *float64
+	Sort            string
 }
 
 type VehicleFilterOptions struct {

@@ -6,9 +6,16 @@ import { useDebounceFn } from '@vueuse/core'
 import SearchFilters from '@/components/search/SearchFilters.vue'
 import VehicleGrid from '@/components/search/VehicleGrid.vue'
 import MobileFilterSheet from '@/components/search/MobileFilterSheet.vue'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const store = useVehiclesStore()
-const { vehicles, loading } = storeToRefs(store)
+const { vehicles, sort, loading } = storeToRefs(store)
 
 const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300)
 
@@ -16,7 +23,12 @@ onMounted(async () => {
   await Promise.all([store.fetchFilterOptions(), store.fetchVehicles()])
 })
 
-watch(() => store.filters, () => debouncedFetch(), { deep: true })
+watch(
+  () => store.filters,
+  () => debouncedFetch(),
+  { deep: true },
+)
+watch(sort, () => store.fetchVehicles())
 </script>
 
 <template>
@@ -36,7 +48,22 @@ watch(() => store.filters, () => debouncedFetch(), { deep: true })
             <span v-if="!loading">{{ vehicles.length }} vehicles</span>
             <span v-else>Loading...</span>
           </p>
-          <MobileFilterSheet />
+          <div class="flex items-center gap-2">
+            <Select v-model="sort">
+              <SelectTrigger class="w-44">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                <SelectItem value="year_desc">Newest</SelectItem>
+                <SelectItem value="year_asc">Oldest</SelectItem>
+                <SelectItem value="bids_desc">Most Bids</SelectItem>
+                <SelectItem value="bids_asc">Fewest Bids</SelectItem>
+              </SelectContent>
+            </Select>
+            <MobileFilterSheet />
+          </div>
         </div>
 
         <VehicleGrid />

@@ -76,6 +76,21 @@ func (s RealVehiclesService) GetAllVehicles(filters database.VehicleFilter) ([]d
 		q = q.Where("condition_grade <= ?", *filters.ConditionMax)
 	}
 
+	switch filters.Sort {
+	case "price_asc":
+		q = q.Order("current_bid ASC")
+	case "price_desc":
+		q = q.Order("current_bid DESC")
+	case "year_desc":
+		q = q.Order("year DESC")
+	case "year_asc":
+		q = q.Order("year ASC")
+	case "bids_desc":
+		q = q.Order("bid_count DESC")
+	case "bids_asc":
+		q = q.Order("bid_count ASC")
+	}
+
 	err := q.Find(&vehicles).Error
 	return vehicles, err
 }
