@@ -210,12 +210,12 @@ onMounted(async () => {
                 <dd>{{ formatCurrency(vehicle.starting_bid) }}</dd>
               </div>
               <Separator />
-              <div v-if="vehicle.reserve_price" class="flex justify-between">
+              <div v-if="vehicle.reserve_price != null" class="flex justify-between">
                 <dt class="text-muted-foreground">Reserve Price</dt>
                 <dd>{{ formatCurrency(vehicle.reserve_price) }}</dd>
               </div>
-              <Separator v-if="vehicle.reserve_price" />
-              <div v-if="!ended && vehicle.buy_now_price" class="flex justify-between">
+              <Separator v-if="vehicle.reserve_price != null" />
+              <div v-if="!ended && vehicle.buy_now_price != null" class="flex justify-between">
                 <dt class="text-muted-foreground">Buy Now Price</dt>
                 <dd class="font-semibold">
                   {{ formatCurrency(vehicle.buy_now_price) }}
