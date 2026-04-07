@@ -23,6 +23,7 @@ type VehiclesService interface {
 	CreateVehicle(database.VehicleCreate) (database.Vehicle, error)
 	UpdateVehicle(id string, input database.VehicleUpdate) (database.Vehicle, error)
 	DeleteVehicle(id string) (any, error)
+	GetAllBids() ([]database.Bid, error)
 }
 
 type RealVehiclesService struct {
@@ -246,6 +247,19 @@ func (s RealVehiclesService) UpdateVehicle(id string, input database.VehicleUpda
 			return result.Error
 		}
 
+		isBuyNow := vehicle.BuyNowPrice != nil && bidAmount >= *vehicle.BuyNowPrice
+		vehicleName := fmt.Sprintf("%d %s %s %s", vehicle.Year, vehicle.Make, vehicle.VehicleModel, vehicle.Trim)
+		bid := database.Bid{
+			VehicleID:   vehicle.ID,
+			VehicleExID: vehicle.ExternalID,
+			VehicleName: vehicleName,
+			BidAmount:   bidAmount,
+			IsBuyNow:    isBuyNow,
+		}
+		if err := tx.Create(&bid).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -261,4 +275,10 @@ func (s RealVehiclesService) DeleteVehicle(id string) (any, error) {
 		return nil, err
 	}
 	return nil, s.DB.Select("DamageNotes", "Images").Delete(&vehicle).Error
+}
+
+func (s RealVehiclesService) GetAllBids() ([]database.Bid, error) {
+	var bids []database.Bid
+	err := s.DB.Order("created_at DESC").Find(&bids).Error
+	return bids, err
 }

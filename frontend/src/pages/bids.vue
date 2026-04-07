@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useBidsStore } from "@/stores/bids";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Icon } from "@iconify/vue";
 import { formatCurrency } from "@/lib/format";
 
 const bidsStore = useBidsStore();
+const { bids, loading } = storeToRefs(bidsStore);
 
-const bids = computed(() => bidsStore.bids);
-
-function formatRelativeTime(iso: string) {
+function formatRelativeTime(iso: string | undefined) {
+  if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return "Just now";
@@ -21,6 +23,8 @@ function formatRelativeTime(iso: string) {
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
+
+onMounted(() => bidsStore.fetchBids());
 </script>
 
 <template>
@@ -35,7 +39,12 @@ function formatRelativeTime(iso: string) {
       </RouterLink>
     </div>
 
-    <div v-if="bids.length === 0" class="py-16 text-center">
+    <!-- Loading -->
+    <div v-if="loading" class="space-y-4">
+      <Skeleton v-for="i in 4" :key="i" class="h-16 w-full rounded-md" />
+    </div>
+
+    <div v-else-if="bids.length === 0" class="py-16 text-center">
       <Icon icon="hugeicons:invoice-03" class="mx-auto h-12 w-12 text-muted-foreground/50" />
       <p class="mt-4 text-lg font-medium text-muted-foreground">No bids yet</p>
       <p class="text-sm text-muted-foreground mt-1">
@@ -47,22 +56,25 @@ function formatRelativeTime(iso: string) {
     </div>
 
     <div v-else class="space-y-1">
-      <div v-for="(bid, index) in bids" :key="`${bid.vehicleId}-${bid.bidTime}`">
+      <div
+        v-for="(bid, index) in bids"
+        :key="`${bid.vehicle_external_id}-${bid.bid_time}`"
+      >
         <RouterLink
-          :to="`/vehicles/${bid.vehicleId}`"
+          :to="`/vehicles/${bid.vehicle_external_id}`"
           class="flex items-center justify-between py-3 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors"
         >
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <p class="font-medium truncate">{{ bid.vehicleName }}</p>
-              <Badge v-if="bid.isBuyNow" variant="secondary" class="shrink-0">Buy Now</Badge>
+              <p class="font-medium truncate">{{ bid.vehicle_name }}</p>
+              <Badge v-if="bid.is_buy_now" variant="secondary" class="shrink-0">Buy Now</Badge>
             </div>
             <p class="text-sm text-muted-foreground mt-0.5">
-              {{ formatRelativeTime(bid.bidTime) }}
+              {{ formatRelativeTime(bid.bid_time) }}
             </p>
           </div>
           <div class="text-right shrink-0 ml-4">
-            <p class="font-semibold">{{ formatCurrency(bid.bidAmount) }}</p>
+            <p class="font-semibold">{{ formatCurrency(bid.bid_amount) }}</p>
           </div>
         </RouterLink>
         <Separator v-if="index < bids.length - 1" />

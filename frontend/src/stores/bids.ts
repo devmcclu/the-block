@@ -1,37 +1,25 @@
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { defineStore } from "pinia";
+import { api } from "@/lib/api/client";
+import type { components } from "@/lib/api/v1";
 
-export interface BidRecord {
-  vehicleId: string;
-  vehicleName: string;
-  bidAmount: number;
-  bidTime: string;
-  isBuyNow: boolean;
-}
-
-const STORAGE_KEY = "the-block-bids";
-
-function loadFromStorage(): BidRecord[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
+export type Bid = components["schemas"]["Bid"];
 
 export const useBidsStore = defineStore("bids", () => {
-  const bids = ref<BidRecord[]>(loadFromStorage());
+  const bids = ref<Bid[]>([]);
+  const loading = ref(false);
 
-  watch(bids, (val) => localStorage.setItem(STORAGE_KEY, JSON.stringify(val)), { deep: true });
-
-  function addBid(record: BidRecord) {
-    bids.value.unshift(record);
+  async function fetchBids() {
+    loading.value = true;
+    try {
+      const { data } = await api.GET("/bids/");
+      if (data) {
+        bids.value = data;
+      }
+    } finally {
+      loading.value = false;
+    }
   }
 
-  function getBidsForVehicle(vehicleId: string) {
-    return bids.value.filter((b) => b.vehicleId === vehicleId);
-  }
-
-  return { bids, addBid, getBidsForVehicle };
+  return { bids, loading, fetchBids };
 });

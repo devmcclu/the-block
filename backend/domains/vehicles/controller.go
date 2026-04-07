@@ -61,6 +61,9 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 	fuego.Get(vehiclesGroup, "/config", rs.getConfig)
 	fuego.Get(vehiclesGroup, "/filters", rs.getFilterOptions)
 
+	bidsGroup := fuego.Group(s, "/bids")
+	fuego.Get(bidsGroup, "/", rs.getAllBids)
+
 	fuego.Get(vehiclesGroup, "/{id}", rs.getVehicle)
 	fuego.Put(vehiclesGroup, "/{id}", rs.putVehicle)
 	fuego.Delete(vehiclesGroup, "/{id}", rs.deleteVehicle)
@@ -245,4 +248,12 @@ func (rs VehiclesResources) deleteVehicle(c fuego.ContextNoBody) (any, error) {
 		return nil, mapServiceErr(err, fmt.Sprintf("delete vehicle %s", c.PathParam("id")))
 	}
 	return result, nil
+}
+
+func (rs VehiclesResources) getAllBids(c fuego.ContextNoBody) ([]database.Bid, error) {
+	bids, err := rs.VehiclesService.GetAllBids()
+	if err != nil {
+		return nil, mapServiceErr(err, "list bids")
+	}
+	return bids, nil
 }

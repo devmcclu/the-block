@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Vehicle struct {
 	gorm.Model
@@ -78,6 +82,17 @@ type VehicleCreate struct {
 
 type VehicleUpdate struct {
 	BidAmount *int `json:"bid_amount" validate:"required"`
+}
+
+type Bid struct {
+	ID          uint      `json:"-" gorm:"primarykey"`
+	CreatedAt   time.Time `json:"bid_time"`
+	UpdatedAt   time.Time `json:"-"`
+	VehicleID   uint      `json:"-"`
+	VehicleExID string    `json:"vehicle_external_id" gorm:"index;not null"`
+	VehicleName string    `json:"vehicle_name"`
+	BidAmount   int       `json:"bid_amount"`
+	IsBuyNow    bool      `json:"is_buy_now"`
 }
 
 type VehicleFilter struct {

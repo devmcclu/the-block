@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/lib/api/client";
 import type { Vehicle } from "@/stores/vehicles";
-import { useBidsStore } from "@/stores/bids";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,7 +55,6 @@ const timeClass = computed(() => {
 });
 
 const minBidIncrement = getMinBidIncrement();
-const bidsStore = useBidsStore();
 
 const bidOpen = ref(false);
 const bidAmount = ref<number | undefined>(undefined);
@@ -91,7 +89,7 @@ const minimumBid = computed(() => {
   if (!vehicle.value.bid_count || vehicle.value.bid_count === 0) {
     return vehicle.value.starting_bid ?? 0;
   }
-  return (vehicle.value.current_bid ?? 0) + (minBidIncrement.value ?? 100);
+  return (vehicle.value.current_bid ?? 0) + (minBidIncrement.value ?? 0);
 });
 
 const vehicleName = computed(() => {
@@ -118,13 +116,6 @@ async function placeBid() {
       bidError.value = (fetchError as { detail?: string }).detail ?? "Failed to place bid";
     } else if (data) {
       vehicle.value = data;
-      bidsStore.addBid({
-        vehicleId: id,
-        vehicleName: vehicleName.value,
-        bidAmount: bidAmount.value,
-        bidTime: new Date().toISOString(),
-        isBuyNow: false,
-      });
       bidSuccess.value = true;
       bidError.value = null;
     }
@@ -152,13 +143,6 @@ async function confirmBuyNow() {
       });
     } else if (data) {
       vehicle.value = data;
-      bidsStore.addBid({
-        vehicleId: id,
-        vehicleName: vehicleName.value,
-        bidAmount: price,
-        bidTime: new Date().toISOString(),
-        isBuyNow: true,
-      });
       toast.success("Purchase complete", {
         description: `You purchased this vehicle for ${formatCurrency(price)}.`,
       });

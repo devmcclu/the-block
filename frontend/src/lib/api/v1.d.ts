@@ -4,6 +4,34 @@
  */
 
 export interface paths {
+    "/bids/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * get all bids
+         * @description #### Controller:
+         *
+         *     `github.com/devmcclu/the-block/backend/domains/vehicles.VehiclesResources.getAllBids`
+         *
+         *     #### Middlewares:
+         *
+         *     - `github.com/go-fuego/fuego.defaultLogger.middleware`
+         *
+         *     ---
+         */
+        get: operations["GET_/bids/"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/vehicles/": {
         parameters: {
             query?: never;
@@ -161,6 +189,15 @@ export interface components {
             max_auction_duration_hours?: number;
             min_bid_increment?: number;
         };
+        /** @description Bid schema */
+        Bid: {
+            bid_amount?: number;
+            /** Format: date-time */
+            bid_time?: string;
+            is_buy_now?: boolean;
+            vehicle_external_id?: string;
+            vehicle_name?: string;
+        };
         /** @description HTTPError schema */
         HTTPError: {
             /** @description Human readable error message */
@@ -290,6 +327,55 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "GET_/bids/": {
+        parameters: {
+            query?: never;
+            header?: {
+                Accept?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bid"][];
+                    "application/xml": components["schemas"]["Bid"][];
+                };
+            };
+            /** @description Bad Request _(validation or deserialization error)_ */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPError"];
+                    "application/xml": components["schemas"]["HTTPError"];
+                };
+            };
+            /** @description Internal Server Error _(panics)_ */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPError"];
+                    "application/xml": components["schemas"]["HTTPError"];
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     "GET_/vehicles/": {
         parameters: {
             query?: {
