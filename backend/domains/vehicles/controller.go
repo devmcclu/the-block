@@ -66,6 +66,7 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 
 	fuego.Get(vehiclesGroup, "/{id}", rs.getVehicle)
 	fuego.Put(vehiclesGroup, "/{id}", rs.putVehicle)
+	fuego.Post(vehiclesGroup, "/{id}/buy", rs.buyNowVehicle)
 	fuego.Delete(vehiclesGroup, "/{id}", rs.deleteVehicle)
 }
 
@@ -77,7 +78,7 @@ func mapServiceErr(err error, context string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
 	}
-	if errors.Is(err, ErrBidTooLow) || errors.Is(err, ErrAuctionEnded) {
+	if errors.Is(err, ErrBidTooLow) || errors.Is(err, ErrAuctionEnded) || errors.Is(err, ErrNoBuyNow) {
 		return fuego.ConflictError{Detail: err.Error()}
 	}
 	return fuego.HTTPError{
@@ -248,6 +249,16 @@ func (rs VehiclesResources) deleteVehicle(c fuego.ContextNoBody) (any, error) {
 		return nil, mapServiceErr(err, fmt.Sprintf("delete vehicle %s", c.PathParam("id")))
 	}
 	return result, nil
+}
+
+func (rs VehiclesResources) buyNowVehicle(c fuego.ContextNoBody) (database.Vehicle, error) {
+	id := c.PathParam("id")
+
+	vehicle, err := rs.VehiclesService.BuyNow(id)
+	if err != nil {
+		return database.Vehicle{}, mapServiceErr(err, fmt.Sprintf("buy vehicle %s", id))
+	}
+	return vehicle, nil
 }
 
 func (rs VehiclesResources) getAllBids(c fuego.ContextNoBody) ([]database.Bid, error) {

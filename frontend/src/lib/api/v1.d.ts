@@ -180,6 +180,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/vehicles/{id}/buy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * buy now vehicle
+         * @description #### Controller:
+         *
+         *     `github.com/devmcclu/the-block/backend/domains/vehicles.VehiclesResources.buyNowVehicle`
+         *
+         *     #### Middlewares:
+         *
+         *     - `github.com/go-fuego/fuego.defaultLogger.middleware`
+         *
+         *     ---
+         */
+        post: operations["POST_/vehicles/:id/buy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -738,6 +766,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["unknown-interface"];
                     "application/xml": components["schemas"]["unknown-interface"];
+                };
+            };
+            /** @description Bad Request _(validation or deserialization error)_ */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPError"];
+                    "application/xml": components["schemas"]["HTTPError"];
+                };
+            };
+            /** @description Internal Server Error _(panics)_ */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPError"];
+                    "application/xml": components["schemas"]["HTTPError"];
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "POST_/vehicles/:id/buy": {
+        parameters: {
+            query?: never;
+            header?: {
+                Accept?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Vehicle"];
+                    "application/xml": components["schemas"]["Vehicle"];
                 };
             };
             /** @description Bad Request _(validation or deserialization error)_ */

@@ -24,6 +24,7 @@ type VehiclesService interface {
 	UpdateVehicle(id string, input database.VehicleUpdate) (database.Vehicle, error)
 	DeleteVehicle(id string) (any, error)
 	GetAllBids() ([]database.Bid, error)
+	BuyNow(id string) (database.Vehicle, error)
 }
 
 type RealVehiclesService struct {
@@ -281,4 +282,48 @@ func (s RealVehiclesService) GetAllBids() ([]database.Bid, error) {
 	var bids []database.Bid
 	err := s.DB.Order("created_at DESC").Find(&bids).Error
 	return bids, err
+}
+
+// ErrNoBuyNow is returned when a vehicle does not have a buy now price.
+var ErrNoBuyNow = errors.New("vehicle does not have a buy now price")
+
+func (s RealVehiclesService) BuyNow(id string) (database.Vehicle, error) {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		var vehicle database.Vehicle
+		if err := tx.Where("external_id = ?", id).First(&vehicle).Error; err != nil {
+			return err
+		}
+
+		auctionStart, err := time.ParseInLocation("2006-01-02T15:04:05", vehicle.AuctionStart, time.UTC)
+		if err != nil {
+			return fmt.Errorf("invalid auction_start: %w", err)
+		}
+		auctionEnd := auctionStart.Add(time.Duration(s.MaxAuctionDurationHours) * time.Hour)
+		if time.Now().UTC().After(auctionEnd) {
+			return fmt.Errorf("%w: auction ended at %s", ErrAuctionEnded, auctionEnd.Format(time.RFC3339))
+		}
+
+		if vehicle.BuyNowPrice == nil {
+			return ErrNoBuyNow
+		}
+
+		vehicleName := fmt.Sprintf("%d %s %s %s", vehicle.Year, vehicle.Make, vehicle.VehicleModel, vehicle.Trim)
+		bid := database.Bid{
+			VehicleID:   vehicle.ID,
+			VehicleExID: vehicle.ExternalID,
+			VehicleName: vehicleName,
+			BidAmount:   *vehicle.BuyNowPrice,
+			IsBuyNow:    true,
+		}
+		if err := tx.Create(&bid).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return database.Vehicle{}, err
+	}
+
+	return s.GetVehicle(id)
 }

@@ -250,3 +250,73 @@ func TestPlaceBid_MultipleBidsIncrementCount(t *testing.T) {
 	assert.Equal(t, 5, vehicle.BidCount)
 	assert.Equal(t, 1400, vehicle.CurrentBid)
 }
+
+func TestBuyNow_Success(t *testing.T) {
+	db := setupTestDB(t)
+	svc := newService(db)
+
+	buyNow := 5000
+	seedVehicle(t, db, func(v *database.Vehicle) {
+		v.BuyNowPrice = &buyNow
+	})
+
+	vehicle, err := svc.BuyNow("test-vehicle-1")
+	require.NoError(t, err)
+
+	// Buy Now should not change current_bid or bid_count
+	assert.Equal(t, 0, vehicle.CurrentBid)
+	assert.Equal(t, 0, vehicle.BidCount)
+
+	// But it should create a bid record
+	bids, err := svc.GetAllBids()
+	require.NoError(t, err)
+	require.Len(t, bids, 1)
+	assert.True(t, bids[0].IsBuyNow)
+	assert.Equal(t, 5000, bids[0].BidAmount)
+}
+
+func TestBuyNow_NoBuyNowPrice(t *testing.T) {
+	db := setupTestDB(t)
+	svc := newService(db)
+
+	seedVehicle(t, db) // no BuyNowPrice set
+
+	_, err := svc.BuyNow("test-vehicle-1")
+	require.Error(t, err)
+	assert.ErrorIs(t, err, ErrNoBuyNow)
+}
+
+func TestBuyNow_AuctionEnded(t *testing.T) {
+	db := setupTestDB(t)
+	svc := newService(db)
+
+	buyNow := 5000
+	seedVehicle(t, db, func(v *database.Vehicle) {
+		v.BuyNowPrice = &buyNow
+		v.AuctionStart = expiredAuctionStart()
+	})
+
+	_, err := svc.BuyNow("test-vehicle-1")
+	require.Error(t, err)
+	assert.ErrorIs(t, err, ErrAuctionEnded)
+}
+
+func TestBuyNow_DoesNotAffectBids(t *testing.T) {
+	db := setupTestDB(t)
+	svc := newService(db)
+
+	buyNow := 5000
+	seedVehicle(t, db, func(v *database.Vehicle) {
+		v.BuyNowPrice = &buyNow
+	})
+
+	// Place a regular bid first
+	_, err := svc.UpdateVehicle("test-vehicle-1", database.VehicleUpdate{BidAmount: new(1000)})
+	require.NoError(t, err)
+
+	// Buy Now should not change the bid state
+	vehicle, err := svc.BuyNow("test-vehicle-1")
+	require.NoError(t, err)
+	assert.Equal(t, 1000, vehicle.CurrentBid)
+	assert.Equal(t, 1, vehicle.BidCount)
+}

@@ -63,6 +63,12 @@ const bidSuccess = ref(false);
 const bidLoading = ref(false);
 const buyNowOpen = ref(false);
 const buyNowLoading = ref(false);
+const buyNowSuccess = ref(false);
+
+function openBuyNowDialog() {
+  buyNowSuccess.value = false;
+  buyNowOpen.value = true;
+}
 
 function openBidDialog() {
   bidAmount.value = undefined;
@@ -128,14 +134,12 @@ async function placeBid() {
 
 async function confirmBuyNow() {
   if (!vehicle.value || vehicle.value.buy_now_price == null) return;
-  const price = vehicle.value.buy_now_price;
 
   buyNowLoading.value = true;
   try {
     const id = vehicle.value.external_id!;
-    const { data, error: fetchError } = await api.PUT("/vehicles/{id}", {
+    const { data, error: fetchError } = await api.POST("/vehicles/{id}/buy", {
       params: { path: { id } },
-      body: { bid_amount: price },
     });
     if (fetchError) {
       toast.error("Purchase failed", {
@@ -143,10 +147,7 @@ async function confirmBuyNow() {
       });
     } else if (data) {
       vehicle.value = data;
-      toast.success("Purchase complete", {
-        description: `You purchased this vehicle for ${formatCurrency(price)}.`,
-      });
-      buyNowOpen.value = false;
+      buyNowSuccess.value = true;
     }
   } catch {
     toast.error("Purchase failed", { description: "Unable to connect to server" });
@@ -350,7 +351,7 @@ onMounted(async () => {
                 v-if="vehicle.buy_now_price != null"
                 class="w-full"
                 variant="outline"
-                @click="buyNowOpen = true"
+                @click="openBuyNowDialog"
               >
                 <Icon icon="hugeicons:shopping-bag-02" class="h-4 w-4 mr-2" />
                 Buy Now &mdash; {{ formatCurrency(vehicle.buy_now_price) }}
@@ -479,55 +480,79 @@ onMounted(async () => {
         </DialogHeader>
 
         <div v-if="vehicle" class="space-y-4 py-2">
-          <div class="flex items-center gap-4">
-            <div
-              v-if="vehicle.images && vehicle.images.length > 0"
-              class="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted"
-            >
-              <img
-                :src="vehicle.images?.[0]?.url"
-                :alt="vehicleName"
-                class="h-full w-full object-cover"
-              />
+          <!-- Success State -->
+          <div v-if="buyNowSuccess" class="text-center space-y-3 py-4">
+            <Icon
+              icon="hugeicons:checkmark-circle-02"
+              class="mx-auto h-12 w-12 text-green-500"
+            />
+            <div>
+              <p class="text-lg font-semibold">Purchase Complete</p>
+              <p class="text-sm text-muted-foreground mt-1">
+                You purchased this vehicle for
+                {{ formatCurrency(vehicle.buy_now_price) }}.
+              </p>
             </div>
-            <div class="min-w-0">
-              <p class="font-semibold truncate">{{ vehicleName }}</p>
-              <p class="text-sm text-muted-foreground">Lot {{ vehicle.lot }}</p>
-            </div>
+            <p class="text-sm text-muted-foreground">{{ vehicleName }}</p>
           </div>
 
-          <Separator />
-
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-muted-foreground">Purchase Price</span>
-              <span class="text-lg font-bold">
-                {{ formatCurrency(vehicle.buy_now_price) }}
-              </span>
+          <!-- Checkout Form -->
+          <template v-else>
+            <div class="flex items-center gap-4">
+              <div
+                v-if="vehicle.images && vehicle.images.length > 0"
+                class="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted"
+              >
+                <img
+                  :src="vehicle.images?.[0]?.url"
+                  :alt="vehicleName"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <div class="min-w-0">
+                <p class="font-semibold truncate">{{ vehicleName }}</p>
+                <p class="text-sm text-muted-foreground">Lot {{ vehicle.lot }}</p>
+              </div>
             </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Payment Method</p>
-            <div class="flex items-center gap-2 rounded-md border p-3">
-              <Icon icon="hugeicons:credit-card" class="h-5 w-5 text-muted-foreground" />
-              <span class="text-sm">Visa ending in 4242</span>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-muted-foreground">Purchase Price</span>
+                <span class="text-lg font-bold">
+                  {{ formatCurrency(vehicle.buy_now_price) }}
+                </span>
+              </div>
             </div>
-          </div>
+
+            <Separator />
+
+            <div class="space-y-1">
+              <p class="text-sm font-medium">Payment Method</p>
+              <div class="flex items-center gap-2 rounded-md border p-3">
+                <Icon icon="hugeicons:credit-card" class="h-5 w-5 text-muted-foreground" />
+                <span class="text-sm">Visa ending in 4242</span>
+              </div>
+            </div>
+          </template>
         </div>
 
         <DialogFooter class="gap-2 sm:gap-0">
-          <Button variant="outline" @click="buyNowOpen = false">Cancel</Button>
-          <Button :disabled="buyNowLoading" @click="confirmBuyNow">
-            <Icon
-              v-if="buyNowLoading"
-              icon="hugeicons:loading-03"
-              class="h-4 w-4 mr-2 animate-spin"
-            />
-            Confirm Purchase
-          </Button>
+          <template v-if="buyNowSuccess">
+            <Button @click="buyNowOpen = false">Done</Button>
+          </template>
+          <template v-else>
+            <Button variant="outline" @click="buyNowOpen = false">Cancel</Button>
+            <Button :disabled="buyNowLoading" @click="confirmBuyNow">
+              <Icon
+                v-if="buyNowLoading"
+                icon="hugeicons:loading-03"
+                class="h-4 w-4 mr-2 animate-spin"
+              />
+              Confirm Purchase
+            </Button>
+          </template>
         </DialogFooter>
       </DialogContent>
     </Dialog>
