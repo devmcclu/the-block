@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/lib/api/client";
 import type { Vehicle } from "@/stores/vehicles";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -189,7 +189,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="container mx-auto px-4 py-6 max-w-5xl">
+  <main class="container mx-auto px-4 py-6 max-w-6xl">
     <RouterLink to="/">
       <Button variant="ghost" size="sm" class="mb-4">
         <Icon icon="hugeicons:arrow-left-01" class="h-4 w-4 mr-2" />
@@ -199,17 +199,35 @@ onMounted(async () => {
 
     <!-- Loading -->
     <div v-if="loading" class="space-y-6">
-      <Skeleton class="aspect-video w-full rounded-lg" />
-      <Skeleton class="h-8 w-2/3" />
-      <Skeleton class="h-4 w-1/3" />
+      <Skeleton class="aspect-video w-full rounded-xl" />
+      <div class="grid lg:grid-cols-5 gap-6">
+        <div class="lg:col-span-3 space-y-4">
+          <Skeleton class="h-8 w-2/3" />
+          <Skeleton class="h-4 w-1/3" />
+          <Skeleton class="h-48 w-full rounded-xl" />
+        </div>
+        <div class="lg:col-span-2">
+          <Skeleton class="h-72 w-full rounded-xl" />
+        </div>
+      </div>
     </div>
 
     <template v-else-if="vehicle">
+      <!-- Title -->
+      <div class="mb-4">
+        <h1 class="text-2xl font-bold tracking-tight">
+          {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }} {{ vehicle.trim }}
+        </h1>
+        <p class="text-sm text-muted-foreground mt-1">
+          {{ vehicle.city }}, {{ vehicle.province }} &middot; Lot {{ vehicle.lot }}
+        </p>
+      </div>
+
       <!-- Image Gallery -->
-      <Carousel class="w-full mb-6">
+      <Carousel class="w-full mb-8">
         <CarouselContent>
           <CarouselItem v-for="(image, index) in vehicle.images" :key="index">
-            <div class="aspect-video overflow-hidden rounded-lg bg-muted">
+            <div class="aspect-video overflow-hidden rounded-xl bg-muted">
               <img
                 :src="image.url"
                 :alt="`Photo ${index + 1}`"
@@ -223,159 +241,180 @@ onMounted(async () => {
         <CarouselNext class="absolute right-4 top-1/2 -translate-y-1/2" />
       </Carousel>
 
-      <!-- Title & Badges -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">
-          {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }} {{ vehicle.trim }}
-        </h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          {{ vehicle.city }}, {{ vehicle.province }} &middot; Lot {{ vehicle.lot }}
-        </p>
-        <div class="flex flex-wrap gap-1.5 mt-3">
-          <Badge variant="secondary" class="capitalize">{{ vehicle.body_style }}</Badge>
-          <Badge variant="secondary">{{ vehicle.drivetrain }}</Badge>
-          <Badge variant="secondary" class="capitalize">{{ vehicle.fuel_type }}</Badge>
-          <Badge variant="secondary" class="capitalize">{{ vehicle.transmission }}</Badge>
-          <Badge variant="secondary" class="capitalize">{{ vehicle.title_status }}</Badge>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-8">
-        <!-- Specs -->
-        <div>
-          <h2 class="text-lg font-semibold mb-3">Vehicle Details</h2>
-          <dl class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">VIN</dt>
-              <dd class="font-mono text-xs">{{ vehicle.vin }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Engine</dt>
-              <dd>{{ vehicle.engine }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Transmission</dt>
-              <dd class="capitalize">{{ vehicle.transmission }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Drivetrain</dt>
-              <dd>{{ vehicle.drivetrain }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Odometer</dt>
-              <dd>{{ formatOdometer(vehicle.odometer_km) }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Exterior Color</dt>
-              <dd class="capitalize">{{ vehicle.exterior_color }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Interior Color</dt>
-              <dd class="capitalize">{{ vehicle.interior_color }}</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Condition Grade</dt>
-              <dd>{{ vehicle.condition_grade?.toFixed(1) }} / 5.0</dd>
-            </div>
-            <Separator />
-            <div class="flex justify-between">
-              <dt class="text-muted-foreground">Selling Dealership</dt>
-              <dd>{{ vehicle.selling_dealership }}</dd>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Auction & Condition -->
-        <div class="space-y-6">
-          <div>
-            <h2 class="text-lg font-semibold mb-3">Auction</h2>
-            <dl class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <dt class="text-muted-foreground">Time Remaining</dt>
-                <dd class="font-semibold" :class="timeClass">
-                  {{ timeRemaining }}
-                </dd>
-              </div>
-              <Separator />
-              <div class="flex justify-between">
-                <dt class="text-muted-foreground">{{ bidLabel }}</dt>
-                <dd class="font-semibold text-base">
-                  {{ formatCurrency(vehicle.current_bid) }}
-                </dd>
-              </div>
-              <template v-if="ended && !reserveMet">
-                <p class="text-xs text-destructive">
-                  Reserve price not met — auction ended without a sale.
-                </p>
-              </template>
-              <Separator />
-              <div class="flex justify-between">
-                <dt class="text-muted-foreground">Bids</dt>
-                <dd>{{ vehicle.bid_count }}</dd>
-              </div>
-              <Separator />
-              <div class="flex justify-between">
-                <dt class="text-muted-foreground">Starting Bid</dt>
-                <dd>{{ formatCurrency(vehicle.starting_bid) }}</dd>
-              </div>
-              <Separator />
-              <div v-if="vehicle.reserve_price != null" class="flex justify-between">
-                <dt class="text-muted-foreground">Reserve Price</dt>
-                <dd>{{ formatCurrency(vehicle.reserve_price) }}</dd>
-              </div>
-              <Separator v-if="vehicle.reserve_price != null" />
-              <div v-if="!ended && vehicle.buy_now_price != null" class="flex justify-between">
-                <dt class="text-muted-foreground">Buy Now Price</dt>
-                <dd class="font-semibold">
-                  {{ formatCurrency(vehicle.buy_now_price) }}
-                </dd>
-              </div>
-            </dl>
-
-            <!-- Bid Actions -->
-            <div v-if="!ended" class="mt-4 space-y-3">
-              <Separator />
-              <Button class="w-full" @click="openBidDialog">
-                <Icon icon="hugeicons:auction" class="h-4 w-4 mr-2" />
-                Place Bid
-              </Button>
-
-              <Button
-                v-if="vehicle.buy_now_price != null"
-                class="w-full"
-                variant="outline"
-                @click="openBuyNowDialog"
-              >
-                <Icon icon="hugeicons:shopping-bag-02" class="h-4 w-4 mr-2" />
-                Buy Now &mdash; {{ formatCurrency(vehicle.buy_now_price) }}
-              </Button>
-            </div>
-          </div>
+      <div class="grid lg:grid-cols-5 gap-6 items-start">
+        <!-- Left Column: Details + Condition -->
+        <div class="lg:col-span-3 lg:col-start-1 lg:row-start-1 space-y-6 order-2 lg:order-none">
+          <!-- Vehicle Details Card -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-sm uppercase tracking-wide text-muted-foreground">
+                Vehicle Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <div>
+                  <dt class="text-muted-foreground text-xs">VIN</dt>
+                  <dd class="font-mono text-xs mt-0.5">{{ vehicle.vin }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Engine</dt>
+                  <dd class="mt-0.5">{{ vehicle.engine }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Transmission</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.transmission }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Drivetrain</dt>
+                  <dd class="mt-0.5">{{ vehicle.drivetrain }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Odometer</dt>
+                  <dd class="mt-0.5">{{ formatOdometer(vehicle.odometer_km) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Condition Grade</dt>
+                  <dd class="mt-0.5">{{ vehicle.condition_grade?.toFixed(1) }} / 5.0</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Body Style</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.body_style }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Fuel Type</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.fuel_type }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Exterior Color</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.exterior_color }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Interior Color</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.interior_color }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Title Status</dt>
+                  <dd class="capitalize mt-0.5">{{ vehicle.title_status }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground text-xs">Selling Dealership</dt>
+                  <dd class="mt-0.5">{{ vehicle.selling_dealership }}</dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
 
           <!-- Condition Report -->
-          <div v-if="vehicle.condition_report">
-            <h2 class="text-lg font-semibold mb-3">Condition Report</h2>
-            <p class="text-sm text-muted-foreground">
-              {{ vehicle.condition_report }}
-            </p>
-          </div>
+          <Card v-if="vehicle.condition_report">
+            <CardHeader>
+              <CardTitle class="text-sm uppercase tracking-wide text-muted-foreground">
+                Condition Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p class="text-sm leading-relaxed">
+                {{ vehicle.condition_report }}
+              </p>
+            </CardContent>
+          </Card>
 
           <!-- Damage Notes -->
-          <div v-if="vehicle.damage_notes && vehicle.damage_notes.length > 0">
-            <h2 class="text-lg font-semibold mb-3">Damage Notes</h2>
-            <ul class="list-disc list-inside text-sm text-muted-foreground space-y-1">
-              <li v-for="note in vehicle.damage_notes" :key="note.note">
-                {{ note.note }}
-              </li>
-            </ul>
-          </div>
+          <Card
+            v-if="vehicle.damage_notes && vehicle.damage_notes.length > 0"
+            class="border-destructive/20 bg-destructive/5"
+          >
+            <CardHeader>
+              <CardTitle
+                class="text-sm uppercase tracking-wide text-destructive/80 flex items-center gap-2"
+              >
+                <Icon icon="hugeicons:alert-02" class="h-4 w-4" />
+                Damage Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul class="space-y-2 text-sm">
+                <li
+                  v-for="note in vehicle.damage_notes"
+                  :key="note.note"
+                  class="flex items-start gap-2"
+                >
+                  <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive/40" />
+                  <span>{{ note.note }}</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        <!-- Right Column: Auction Panel (sticky) -->
+        <div class="order-1 lg:order-none lg:col-span-2 lg:col-start-4 lg:row-start-1 lg:sticky lg:top-6">
+          <Card class="gap-0 py-0">
+            <!-- Auction Timer -->
+            <div class="flex items-center justify-between border-b px-5 py-3">
+              <div class="flex items-center gap-2">
+                <Icon icon="hugeicons:time-04" class="h-4 w-4 text-muted-foreground" />
+                <span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {{ ended ? "Auction Ended" : "Time Remaining" }}
+                </span>
+              </div>
+              <span class="font-semibold tabular-nums" :class="timeClass">
+                {{ timeRemaining }}
+              </span>
+            </div>
+
+            <!-- Current Bid Hero -->
+            <div class="px-5 py-4 bg-muted/30">
+              <p class="text-xs text-muted-foreground">{{ bidLabel }}</p>
+              <p class="text-3xl font-bold tracking-tight mt-0.5">
+                {{ formatCurrency(vehicle.current_bid) }}
+              </p>
+              <p class="text-xs text-muted-foreground mt-1">
+                {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
+              </p>
+              <p v-if="ended && !reserveMet" class="text-xs text-destructive mt-1.5">
+                Reserve price not met — auction ended without a sale.
+              </p>
+            </div>
+
+            <!-- Price Details -->
+            <div class="px-5 py-4 space-y-4">
+              <dl class="space-y-2.5 text-sm">
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Starting Bid</dt>
+                  <dd>{{ formatCurrency(vehicle.starting_bid) }}</dd>
+                </div>
+                <div v-if="vehicle.reserve_price != null" class="flex justify-between">
+                  <dt class="text-muted-foreground">Reserve Price</dt>
+                  <dd>{{ formatCurrency(vehicle.reserve_price) }}</dd>
+                </div>
+                <div v-if="!ended && vehicle.buy_now_price != null" class="flex justify-between">
+                  <dt class="text-muted-foreground">Buy Now Price</dt>
+                  <dd class="font-semibold">{{ formatCurrency(vehicle.buy_now_price) }}</dd>
+                </div>
+              </dl>
+
+              <!-- Bid Actions -->
+              <div v-if="!ended" class="space-y-2.5">
+                <Separator />
+                <Button class="w-full" size="lg" @click="openBidDialog">
+                  <Icon icon="hugeicons:auction" class="h-4 w-4 mr-2" />
+                  Place Bid
+                </Button>
+
+                <Button
+                  v-if="vehicle.buy_now_price != null"
+                  class="w-full"
+                  size="lg"
+                  variant="outline"
+                  @click="openBuyNowDialog"
+                >
+                  <Icon icon="hugeicons:shopping-bag-02" class="h-4 w-4 mr-2" />
+                  Buy Now - {{ formatCurrency(vehicle.buy_now_price) }}
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </template>
