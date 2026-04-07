@@ -80,7 +80,7 @@ cd backend && golangci-lint run
 - Optional fields (`ReservePrice`, `BuyNowPrice`) use Go pointer types (`*int`) to distinguish null from zero
 
 ### API Routes
-```
+```text
 GET    /vehicles/         # List with filters + sorting (query params)
 GET    /vehicles/config   # Returns { max_auction_duration_hours: 720 }
 GET    /vehicles/filters  # Returns distinct values for all filterable fields
