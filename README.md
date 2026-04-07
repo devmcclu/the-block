@@ -45,6 +45,8 @@ I did not make my filters dynamically show based on current filters. Some filter
 
 Vehicles are not removed from user view if the auction ends or a "purchase" is made. All vehicles are visible to users when no filters are applied.
 
+Time is relative to the user's timezone. Since this is prototype meant to be hosted on a developers machine, we don't assume any difference between server time and user time.
+
 ## Testing
 
 I added simple unit tests for bidding logic, since it wrote data to the DB and it could easily be verified in a test environment. While I could test search query logic and UI, I figured it was best to skip them due to time constraints and the ability to test them manually as I was working on features.

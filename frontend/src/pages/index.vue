@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router/auto";
+import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useVehiclesStore, type VehicleFilters } from "@/stores/vehicles";
 import { useDebounceFn } from "@vueuse/core";
@@ -53,7 +53,7 @@ function loadFromQuery() {
   for (const { filter, param } of numericKeys) {
     const val = q[param];
     if (typeof val === "string" && val) {
-      (store.filters as Record<string, number | undefined>)[filter] = Number(val);
+      (store.filters as unknown as Record<string, number | undefined>)[filter] = Number(val);
     }
   }
   if (typeof q.sort === "string" && q.sort) {
@@ -68,7 +68,7 @@ function syncToQuery() {
     if (arr.length) query[param] = arr.join(",");
   }
   for (const { filter, param } of numericKeys) {
-    const val = (store.filters as Record<string, number | undefined>)[filter];
+    const val = (store.filters as unknown as Record<string, number | undefined>)[filter];
     if (val != null) query[param] = String(val);
   }
   if (sort.value) query.sort = sort.value;
