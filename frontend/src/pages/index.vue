@@ -21,7 +21,11 @@ const { vehicles, sort, loading } = storeToRefs(store);
 const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300);
 
 onMounted(async () => {
-  await Promise.all([loadAuctionConfig(), store.fetchFilterOptions(), store.fetchVehicles()]);
+  await Promise.allSettled([
+    loadAuctionConfig(),
+    store.fetchFilterOptions(),
+    store.fetchVehicles(),
+  ]);
 });
 
 watch(

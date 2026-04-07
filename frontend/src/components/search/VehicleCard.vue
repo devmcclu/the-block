@@ -25,17 +25,19 @@ const { ended, timeRemaining } = useAuctionTime(props.vehicle.auction_start);
 function navigateToVehicle() {
   router.push(`/vehicles/${props.vehicle.external_id}`);
 }
-
 </script>
 
 <template>
-  <Card class="overflow-hidden transition-shadow hover:shadow-md h-full cursor-pointer">
+  <Card
+    class="overflow-hidden transition-shadow hover:shadow-md h-full cursor-pointer"
+    @click="navigateToVehicle"
+  >
     <!-- Image Carousel -->
     <div class="relative">
       <Carousel class="w-full">
         <CarouselContent>
           <CarouselItem v-for="(image, index) in vehicle.images" :key="index">
-            <div class="aspect-[4/3] overflow-hidden bg-muted">
+            <div class="aspect-4/3 overflow-hidden bg-muted">
               <img
                 :src="image.url"
                 :alt="`${displayName} - Photo ${index + 1}`"
@@ -48,15 +50,17 @@ function navigateToVehicle() {
         <CarouselPrevious
           v-if="vehicle.images && vehicle.images.length > 1"
           class="absolute left-2 top-1/2 -translate-y-1/2"
+          @click.stop
         />
         <CarouselNext
           v-if="vehicle.images && vehicle.images.length > 1"
           class="absolute right-2 top-1/2 -translate-y-1/2"
+          @click.stop
         />
       </Carousel>
     </div>
 
-    <CardContent class="p-4 space-y-2" @click="navigateToVehicle">
+    <CardContent class="p-4 space-y-2">
       <h3 class="font-semibold text-sm leading-tight line-clamp-1">
         {{ displayName }}
       </h3>
@@ -79,7 +83,7 @@ function navigateToVehicle() {
       </div>
     </CardContent>
 
-    <CardFooter class="px-4 pb-4 pt-0 flex items-center justify-between" @click="navigateToVehicle">
+    <CardFooter class="px-4 pb-4 pt-0 flex items-center justify-between">
       <div>
         <p class="text-sm font-semibold">
           {{ formatCurrency(vehicle.current_bid) }}

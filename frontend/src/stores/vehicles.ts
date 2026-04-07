@@ -53,7 +53,11 @@ export const useVehiclesStore = defineStore("vehicles", () => {
   const error = ref<string | null>(null);
 
   async function fetchFilterOptions() {
-    const { data } = await api.GET("/vehicles/filters");
+    const { data, error: err } = await api.GET("/vehicles/filters");
+    if (err) {
+      error.value = "Unable to connect to server";
+      return;
+    }
     if (data) {
       filterOptions.value = data;
     }
@@ -86,12 +90,12 @@ export const useVehiclesStore = defineStore("vehicles", () => {
         params: { query: params as Record<string, never> },
       });
       if (err) {
-        error.value = "Failed to fetch vehicles";
+        error.value = "Unable to connect to server";
       } else {
         vehicles.value = data ?? [];
       }
     } catch {
-      error.value = "Failed to fetch vehicles";
+      error.value = "Unable to connect to server";
     } finally {
       loading.value = false;
     }

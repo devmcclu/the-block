@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import VehicleCard from "./VehicleCard.vue";
 
 const store = useVehiclesStore();
-const { vehicles, loading } = storeToRefs(store);
+const { vehicles, loading, error } = storeToRefs(store);
 </script>
 
 <template>
@@ -16,6 +16,12 @@ const { vehicles, loading } = storeToRefs(store);
       <Skeleton class="h-4 w-3/4" />
       <Skeleton class="h-3 w-1/2" />
     </div>
+  </div>
+
+  <!-- Error State -->
+  <div v-else-if="error" class="flex flex-col items-center justify-center py-16 text-center">
+    <p class="text-lg font-medium text-destructive">{{ error }}</p>
+    <p class="text-sm text-muted-foreground mt-1">Try refreshing the page</p>
   </div>
 
   <!-- Empty State -->

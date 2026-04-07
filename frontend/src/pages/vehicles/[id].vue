@@ -21,6 +21,7 @@ import { formatCurrency, formatOdometer } from "@/lib/format";
 const route = useRoute("/vehicles/[id]");
 const vehicle = ref<Vehicle | null>(null);
 const loading = ref(true);
+const error = ref<string | null>(null);
 
 const auctionStart = computed(() => vehicle.value?.auction_start);
 const { ended, timeRemaining } = useAuctionTime(auctionStart, true);
@@ -41,10 +42,12 @@ const bidLabel = computed(() => {
 onMounted(async () => {
   await loadAuctionConfig();
   const id = route.params.id;
-  const { data } = await api.GET("/vehicles/{id}", {
+  const { data, error: fetchError } = await api.GET("/vehicles/{id}", {
     params: { path: { id } },
   });
-  if (data) {
+  if (fetchError) {
+    error.value = "Unable to connect to server";
+  } else if (data) {
     vehicle.value = data;
   }
   loading.value = false;
@@ -223,6 +226,12 @@ onMounted(async () => {
         </div>
       </div>
     </template>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="py-16 text-center">
+      <p class="text-lg font-medium text-destructive">{{ error }}</p>
+      <p class="text-sm text-muted-foreground mt-1">Try refreshing the page</p>
+    </div>
 
     <!-- Not Found -->
     <div v-else class="py-16 text-center">
