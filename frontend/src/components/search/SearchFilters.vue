@@ -103,8 +103,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('makes', make!)"
-              @update:model-value="store.toggleFilter('makes', make!)"
+              :model-value="isChecked('makes', make)"
+              @update:model-value="store.toggleFilter('makes', make)"
             />
             <span class="text-sm">{{ make }}</span>
           </label>
@@ -123,8 +123,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('models', model!)"
-              @update:model-value="store.toggleFilter('models', model!)"
+              :model-value="isChecked('models', model)"
+              @update:model-value="store.toggleFilter('models', model)"
             />
             <span class="text-sm">{{ model }}</span>
           </label>
@@ -143,8 +143,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('bodyStyles', style!)"
-              @update:model-value="store.toggleFilter('bodyStyles', style!)"
+              :model-value="isChecked('bodyStyles', style)"
+              @update:model-value="store.toggleFilter('bodyStyles', style)"
             />
             <span class="text-sm">{{ style }}</span>
           </label>
@@ -163,8 +163,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('exteriorColors', color!)"
-              @update:model-value="store.toggleFilter('exteriorColors', color!)"
+              :model-value="isChecked('exteriorColors', color)"
+              @update:model-value="store.toggleFilter('exteriorColors', color)"
             />
             <span class="text-sm">{{ color }}</span>
           </label>
@@ -183,8 +183,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('interiorColors', color!)"
-              @update:model-value="store.toggleFilter('interiorColors', color!)"
+              :model-value="isChecked('interiorColors', color)"
+              @update:model-value="store.toggleFilter('interiorColors', color)"
             />
             <span class="text-sm">{{ color }}</span>
           </label>
@@ -203,8 +203,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('transmissions', trans!)"
-              @update:model-value="store.toggleFilter('transmissions', trans!)"
+              :model-value="isChecked('transmissions', trans)"
+              @update:model-value="store.toggleFilter('transmissions', trans)"
             />
             <span class="text-sm capitalize">{{ trans }}</span>
           </label>
@@ -223,8 +223,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('drivetrains', dt!)"
-              @update:model-value="store.toggleFilter('drivetrains', dt!)"
+              :model-value="isChecked('drivetrains', dt)"
+              @update:model-value="store.toggleFilter('drivetrains', dt)"
             />
             <span class="text-sm">{{ dt }}</span>
           </label>
@@ -309,8 +309,8 @@ function isChecked(key: ArrayFilterKey, value: string) {
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox
-              :model-value="isChecked('titleStatuses', status!)"
-              @update:model-value="store.toggleFilter('titleStatuses', status!)"
+              :model-value="isChecked('titleStatuses', status)"
+              @update:model-value="store.toggleFilter('titleStatuses', status)"
             />
             <span class="text-sm capitalize">{{ status }}</span>
           </label>
