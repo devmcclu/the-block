@@ -1,12 +1,16 @@
 package vehicles
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+// ErrBidTooLow is returned when a bid does not exceed the current highest bid.
+var ErrBidTooLow = errors.New("bid not higher than current bid")
 
 type VehiclesService interface {
 	GetVehicle(id string) (database.Vehicle, error)
@@ -214,7 +218,7 @@ func (s RealVehiclesService) UpdateVehicle(id string, input database.VehicleUpda
 				return result.Error
 			}
 			if result.RowsAffected == 0 {
-				return fmt.Errorf("bid of %d not higher than current bid", *input.CurrentBid)
+				return fmt.Errorf("%w: %d", ErrBidTooLow, *input.CurrentBid)
 			}
 		}
 

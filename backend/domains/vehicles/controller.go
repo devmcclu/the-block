@@ -3,9 +3,9 @@ package vehicles
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/go-fuego/fuego"
@@ -71,7 +71,7 @@ func mapServiceErr(err error, context string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
 	}
-	if strings.HasPrefix(err.Error(), "bid of ") {
+	if errors.Is(err, ErrBidTooLow) {
 		return fuego.ConflictError{Detail: err.Error()}
 	}
 	return fuego.HTTPError{
@@ -146,6 +146,9 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 		if err != nil {
 			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid condition_min: %s", s)}
 		}
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return nil, fuego.BadRequestError{Detail: "condition_min must be a finite number"}
+		}
 		if v < 0 || v > 5 {
 			return nil, fuego.BadRequestError{Detail: "condition_min must be between 0 and 5"}
 		}
@@ -155,6 +158,9 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 		v, err := strconv.ParseFloat(s, 64)
 		if err != nil {
 			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid condition_max: %s", s)}
+		}
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return nil, fuego.BadRequestError{Detail: "condition_max must be a finite number"}
 		}
 		if v < 0 || v > 5 {
 			return nil, fuego.BadRequestError{Detail: "condition_max must be between 0 and 5"}
