@@ -1,6 +1,8 @@
 package vehicles
 
 import (
+	"fmt"
+
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -195,23 +197,31 @@ func (s RealVehiclesService) CreateVehicle(input database.VehicleCreate) (databa
 }
 
 func (s RealVehiclesService) UpdateVehicle(id string, input database.VehicleUpdate) (database.Vehicle, error) {
-	var vehicle database.Vehicle
-	if err := s.DB.Where("external_id = ?", id).First(&vehicle).Error; err != nil {
-		return database.Vehicle{}, err
-	}
-
-	updates := map[string]any{}
-	if input.CurrentBid != nil {
-		updates["current_bid"] = *input.CurrentBid
-	}
-	if input.BidCount != nil {
-		updates["bid_count"] = *input.BidCount
-	}
-
-	if len(updates) > 0 {
-		if err := s.DB.Model(&vehicle).Updates(updates).Error; err != nil {
-			return database.Vehicle{}, err
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		var vehicle database.Vehicle
+		if err := tx.Where("external_id = ?", id).First(&vehicle).Error; err != nil {
+			return err
 		}
+
+		if input.CurrentBid != nil {
+			result := tx.Model(&vehicle).
+				Where("current_bid < ?", *input.CurrentBid).
+				Updates(map[string]any{
+					"current_bid": *input.CurrentBid,
+					"bid_count":   gorm.Expr("bid_count + 1"),
+				})
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected == 0 {
+				return fmt.Errorf("bid of %d not higher than current bid", *input.CurrentBid)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return database.Vehicle{}, err
 	}
 
 	return s.GetVehicle(id)
