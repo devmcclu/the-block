@@ -38,9 +38,12 @@ const availableModels = computed(() => {
   return filterOptions.value.models;
 });
 
-function parseNumber(value: string): number | undefined {
+function parseNumber(value: string, min?: number, max?: number): number | undefined {
   const n = Number(value);
-  return value === "" || Number.isNaN(n) ? undefined : n;
+  if (value === "" || Number.isNaN(n)) return undefined;
+  if (min != null && n < min) return min;
+  if (max != null && n > max) return max;
+  return n;
 }
 
 type ArrayFilterKey =
@@ -76,17 +79,23 @@ function isChecked(key: ArrayFilterKey, value: string) {
         <Label class="text-sm font-medium">Year</Label>
         <div class="flex items-center gap-2">
           <Input
+            lazy
             type="number"
+            min="1900"
+            max="2100"
             :placeholder="String(filterOptions.year_min ?? 'Min')"
             :model-value="filters.yearMin"
-            @update:model-value="filters.yearMin = parseNumber(String($event))"
+            @update:model-value="filters.yearMin = parseNumber(String($event), 1900, 2100)"
           />
           <span class="text-xs text-muted-foreground">to</span>
           <Input
+            lazy
             type="number"
+            min="1900"
+            max="2100"
             :placeholder="String(filterOptions.year_max ?? 'Max')"
             :model-value="filters.yearMax"
-            @update:model-value="filters.yearMax = parseNumber(String($event))"
+            @update:model-value="filters.yearMax = parseNumber(String($event), 1900, 2100)"
           />
         </div>
       </div>
@@ -238,17 +247,21 @@ function isChecked(key: ArrayFilterKey, value: string) {
         <Label class="text-sm font-medium">Odometer (km)</Label>
         <div class="flex items-center gap-2">
           <Input
+            lazy
             type="number"
+            min="0"
             :placeholder="String(filterOptions.odometer_min ?? 'Min')"
             :model-value="filters.odometerMin"
-            @update:model-value="filters.odometerMin = parseNumber(String($event))"
+            @update:model-value="filters.odometerMin = parseNumber(String($event), 0)"
           />
           <span class="text-xs text-muted-foreground">to</span>
           <Input
+            lazy
             type="number"
+            min="0"
             :placeholder="String(filterOptions.odometer_max ?? 'Max')"
             :model-value="filters.odometerMax"
-            @update:model-value="filters.odometerMax = parseNumber(String($event))"
+            @update:model-value="filters.odometerMax = parseNumber(String($event), 0)"
           />
         </div>
       </div>
@@ -280,19 +293,25 @@ function isChecked(key: ArrayFilterKey, value: string) {
         <Label class="text-sm font-medium">Condition Grade</Label>
         <div class="flex items-center gap-2">
           <Input
+            lazy
             type="number"
             step="0.1"
+            min="0"
+            max="5"
             :placeholder="String(filterOptions.condition_min ?? 'Min')"
             :model-value="filters.conditionMin"
-            @update:model-value="filters.conditionMin = parseNumber(String($event))"
+            @update:model-value="filters.conditionMin = parseNumber(String($event), 0, 5)"
           />
           <span class="text-xs text-muted-foreground">to</span>
           <Input
+            lazy
             type="number"
             step="0.1"
+            min="0"
+            max="5"
             :placeholder="String(filterOptions.condition_max ?? 'Max')"
             :model-value="filters.conditionMax"
-            @update:model-value="filters.conditionMax = parseNumber(String($event))"
+            @update:model-value="filters.conditionMax = parseNumber(String($event), 0, 5)"
           />
         </div>
       </div>

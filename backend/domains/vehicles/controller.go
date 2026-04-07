@@ -1,6 +1,7 @@
 package vehicles
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -11,6 +12,18 @@ import (
 
 // maxAuctionDurationHours is the fixed duration for all auctions (30 days).
 const maxAuctionDurationHours = 720
+
+var validSorts = map[string]bool{
+	"":            true,
+	"price_asc":   true,
+	"price_desc":  true,
+	"year_asc":    true,
+	"year_desc":   true,
+	"bids_asc":    true,
+	"bids_desc":   true,
+	"ending_soon": true,
+	"ending_last": true,
+}
 
 type VehiclesResources struct {
 	VehiclesService VehiclesService
@@ -61,29 +74,65 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 	}
 
 	if v, err := c.QueryParamIntErr("year_min"); err == nil {
+		if v < 1900 || v > 2100 {
+			return nil, fuego.BadRequestError{Detail: "year_min must be between 1900 and 2100"}
+		}
 		filters.YearMin = &v
 	}
 	if v, err := c.QueryParamIntErr("year_max"); err == nil {
+		if v < 1900 || v > 2100 {
+			return nil, fuego.BadRequestError{Detail: "year_max must be between 1900 and 2100"}
+		}
 		filters.YearMax = &v
 	}
+	if filters.YearMin != nil && filters.YearMax != nil && *filters.YearMin > *filters.YearMax {
+		return nil, fuego.BadRequestError{Detail: "year_min must not exceed year_max"}
+	}
+
 	if v, err := c.QueryParamIntErr("odometer_min"); err == nil {
+		if v < 0 {
+			return nil, fuego.BadRequestError{Detail: "odometer_min must not be negative"}
+		}
 		filters.OdometerMin = &v
 	}
 	if v, err := c.QueryParamIntErr("odometer_max"); err == nil {
+		if v < 0 {
+			return nil, fuego.BadRequestError{Detail: "odometer_max must not be negative"}
+		}
 		filters.OdometerMax = &v
 	}
+	if filters.OdometerMin != nil && filters.OdometerMax != nil && *filters.OdometerMin > *filters.OdometerMax {
+		return nil, fuego.BadRequestError{Detail: "odometer_min must not exceed odometer_max"}
+	}
+
 	if s := c.QueryParam("condition_min"); s != "" {
-		if v, err := strconv.ParseFloat(s, 64); err == nil {
-			filters.ConditionMin = &v
+		v, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid condition_min: %s", s)}
 		}
+		if v < 0 || v > 5 {
+			return nil, fuego.BadRequestError{Detail: "condition_min must be between 0 and 5"}
+		}
+		filters.ConditionMin = &v
 	}
 	if s := c.QueryParam("condition_max"); s != "" {
-		if v, err := strconv.ParseFloat(s, 64); err == nil {
-			filters.ConditionMax = &v
+		v, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid condition_max: %s", s)}
 		}
+		if v < 0 || v > 5 {
+			return nil, fuego.BadRequestError{Detail: "condition_max must be between 0 and 5"}
+		}
+		filters.ConditionMax = &v
+	}
+	if filters.ConditionMin != nil && filters.ConditionMax != nil && *filters.ConditionMin > *filters.ConditionMax {
+		return nil, fuego.BadRequestError{Detail: "condition_min must not exceed condition_max"}
 	}
 
 	filters.Sort = c.QueryParam("sort")
+	if !validSorts[filters.Sort] {
+		return nil, fuego.BadRequestError{Detail: fmt.Sprintf("invalid sort value: %s", filters.Sort)}
+	}
 
 	return rs.VehiclesService.GetAllVehicles(filters)
 }

@@ -68,8 +68,15 @@ export const useVehiclesStore = defineStore("vehicles", () => {
     error.value = null;
 
     const params: Record<string, unknown> = {};
-    if (filters.yearMin != null) params.year_min = filters.yearMin;
-    if (filters.yearMax != null) params.year_max = filters.yearMax;
+
+    // Only include range params when min <= max (skip the pair if inverted)
+    const yearOk =
+      filters.yearMin == null || filters.yearMax == null || filters.yearMin <= filters.yearMax;
+    if (yearOk) {
+      if (filters.yearMin != null) params.year_min = filters.yearMin;
+      if (filters.yearMax != null) params.year_max = filters.yearMax;
+    }
+
     if (filters.makes.length) params.make = filters.makes;
     if (filters.models.length) params.model = filters.models;
     if (filters.bodyStyles.length) params.body_style = filters.bodyStyles;
@@ -79,10 +86,25 @@ export const useVehiclesStore = defineStore("vehicles", () => {
     if (filters.drivetrains.length) params.drivetrain = filters.drivetrains;
     if (filters.fuelTypes.length) params.fuel_type = filters.fuelTypes;
     if (filters.titleStatuses.length) params.title_status = filters.titleStatuses;
-    if (filters.odometerMin != null) params.odometer_min = filters.odometerMin;
-    if (filters.odometerMax != null) params.odometer_max = filters.odometerMax;
-    if (filters.conditionMin != null) params.condition_min = String(filters.conditionMin);
-    if (filters.conditionMax != null) params.condition_max = String(filters.conditionMax);
+
+    const odometerOk =
+      filters.odometerMin == null ||
+      filters.odometerMax == null ||
+      filters.odometerMin <= filters.odometerMax;
+    if (odometerOk) {
+      if (filters.odometerMin != null) params.odometer_min = filters.odometerMin;
+      if (filters.odometerMax != null) params.odometer_max = filters.odometerMax;
+    }
+
+    const conditionOk =
+      filters.conditionMin == null ||
+      filters.conditionMax == null ||
+      filters.conditionMin <= filters.conditionMax;
+    if (conditionOk) {
+      if (filters.conditionMin != null) params.condition_min = String(filters.conditionMin);
+      if (filters.conditionMax != null) params.condition_max = String(filters.conditionMax);
+    }
+
     if (sort.value) params.sort = sort.value;
 
     try {
