@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import ModeToggle from '@/components/ModeToggle.vue'
+import { RouterView } from "vue-router";
+import ModeToggle from "@/components/ModeToggle.vue";
 </script>
 
 <template>

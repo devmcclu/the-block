@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import type { Vehicle } from '@/stores/vehicles'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useRouter } from "vue-router";
+import type { Vehicle } from "@/stores/vehicles";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel'
+} from "@/components/ui/carousel";
 
-const router = useRouter()
+const router = useRouter();
 
 const props = defineProps<{
-  vehicle: Vehicle
-}>()
+  vehicle: Vehicle;
+}>();
 
-const displayName = `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`
+const displayName = `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`;
 
 function navigateToVehicle() {
-  router.push(`/vehicles/${props.vehicle.external_id}`)
+  router.push(`/vehicles/${props.vehicle.external_id}`);
 }
 
 function formatCurrency(amount: number | undefined) {
-  if (amount == null) return ''
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
+  if (amount == null) return "";
+  return new Intl.NumberFormat("en-CA", {
+    style: "currency",
+    currency: "CAD",
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 function formatOdometer(km: number | undefined) {
-  if (km == null) return ''
-  return `${km.toLocaleString()} km`
+  if (km == null) return "";
+  return `${km.toLocaleString()} km`;
 }
 </script>
 
@@ -95,7 +95,7 @@ function formatOdometer(km: number | undefined) {
           {{ formatCurrency(vehicle.current_bid) }}
         </p>
         <p class="text-xs text-muted-foreground">
-          {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? 'bid' : 'bids' }}
+          {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
         </p>
       </div>
       <div v-if="vehicle.buy_now_price" class="text-right">

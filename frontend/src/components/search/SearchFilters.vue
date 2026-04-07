@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useVehiclesStore } from '@/stores/vehicles'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import { useVehiclesStore } from "@/stores/vehicles";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-const store = useVehiclesStore()
-const { filterOptions } = storeToRefs(store)
-const filters = store.filters
+const store = useVehiclesStore();
+const { filterOptions } = storeToRefs(store);
+const filters = store.filters;
 
 const hasActiveFilters = computed(() => {
   return (
@@ -30,32 +30,32 @@ const hasActiveFilters = computed(() => {
     filters.odometerMax != null ||
     filters.conditionMin != null ||
     filters.conditionMax != null
-  )
-})
+  );
+});
 
 const availableModels = computed(() => {
-  if (!filterOptions.value.models) return []
-  return filterOptions.value.models
-})
+  if (!filterOptions.value.models) return [];
+  return filterOptions.value.models;
+});
 
 function parseNumber(value: string): number | undefined {
-  const n = Number(value)
-  return value === '' || Number.isNaN(n) ? undefined : n
+  const n = Number(value);
+  return value === "" || Number.isNaN(n) ? undefined : n;
 }
 
 type ArrayFilterKey =
-  | 'makes'
-  | 'models'
-  | 'bodyStyles'
-  | 'exteriorColors'
-  | 'interiorColors'
-  | 'transmissions'
-  | 'drivetrains'
-  | 'fuelTypes'
-  | 'titleStatuses'
+  | "makes"
+  | "models"
+  | "bodyStyles"
+  | "exteriorColors"
+  | "interiorColors"
+  | "transmissions"
+  | "drivetrains"
+  | "fuelTypes"
+  | "titleStatuses";
 
 function isChecked(key: ArrayFilterKey, value: string) {
-  return filters[key].includes(value)
+  return filters[key].includes(value);
 }
 </script>
 

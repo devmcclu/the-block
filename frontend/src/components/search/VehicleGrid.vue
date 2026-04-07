@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useVehiclesStore } from '@/stores/vehicles'
-import { Skeleton } from '@/components/ui/skeleton'
-import VehicleCard from './VehicleCard.vue'
+import { storeToRefs } from "pinia";
+import { useVehiclesStore } from "@/stores/vehicles";
+import { Skeleton } from "@/components/ui/skeleton";
+import VehicleCard from "./VehicleCard.vue";
 
-const store = useVehiclesStore()
-const { vehicles, loading } = storeToRefs(store)
+const store = useVehiclesStore();
+const { vehicles, loading } = storeToRefs(store);
 </script>
 
 <template>

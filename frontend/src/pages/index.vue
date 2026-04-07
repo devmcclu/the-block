@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useVehiclesStore } from '@/stores/vehicles'
-import { useDebounceFn } from '@vueuse/core'
-import SearchFilters from '@/components/search/SearchFilters.vue'
-import VehicleGrid from '@/components/search/VehicleGrid.vue'
-import MobileFilterSheet from '@/components/search/MobileFilterSheet.vue'
+import { watch, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useVehiclesStore } from "@/stores/vehicles";
+import { useDebounceFn } from "@vueuse/core";
+import SearchFilters from "@/components/search/SearchFilters.vue";
+import VehicleGrid from "@/components/search/VehicleGrid.vue";
+import MobileFilterSheet from "@/components/search/MobileFilterSheet.vue";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 
-const store = useVehiclesStore()
-const { vehicles, sort, loading } = storeToRefs(store)
+const store = useVehiclesStore();
+const { vehicles, sort, loading } = storeToRefs(store);
 
-const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300)
+const debouncedFetch = useDebounceFn(() => store.fetchVehicles(), 300);
 
 onMounted(async () => {
-  await Promise.all([store.fetchFilterOptions(), store.fetchVehicles()])
-})
+  await Promise.all([store.fetchFilterOptions(), store.fetchVehicles()]);
+});
 
 watch(
   () => store.filters,
   () => debouncedFetch(),
   { deep: true },
-)
-watch(sort, () => store.fetchVehicles())
+);
+watch(sort, () => store.fetchVehicles());
 </script>
 
 <template>

@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { api } from '@/lib/api/client'
-import type { Vehicle } from '@/stores/vehicles'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { api } from "@/lib/api/client";
+import type { Vehicle } from "@/stores/vehicles";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel'
-import { Icon } from '@iconify/vue'
+} from "@/components/ui/carousel";
+import { Icon } from "@iconify/vue";
 
-const route = useRoute('/vehicles/[id]')
-const vehicle = ref<Vehicle | null>(null)
-const loading = ref(true)
+const route = useRoute("/vehicles/[id]");
+const vehicle = ref<Vehicle | null>(null);
+const loading = ref(true);
 
 function formatCurrency(amount: number | undefined | null) {
-  if (amount == null) return ''
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  if (amount == null) return "";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 onMounted(async () => {
-  const id = route.params.id
-  const { data } = await api.GET('/vehicles/{id}', {
+  const id = route.params.id;
+  const { data } = await api.GET("/vehicles/{id}", {
     params: { path: { id } },
-  })
+  });
   if (data) {
-    vehicle.value = data
+    vehicle.value = data;
   }
-  loading.value = false
-})
+  loading.value = false;
+});
 </script>
 
 <template>

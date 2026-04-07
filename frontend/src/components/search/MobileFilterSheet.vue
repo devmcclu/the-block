@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useVehiclesStore } from '@/stores/vehicles'
-import { Icon } from '@iconify/vue'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import SearchFilters from './SearchFilters.vue'
+import { computed } from "vue";
+import { useVehiclesStore } from "@/stores/vehicles";
+import { Icon } from "@iconify/vue";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import SearchFilters from "./SearchFilters.vue";
 
-const store = useVehiclesStore()
-const filters = store.filters
+const store = useVehiclesStore();
+const filters = store.filters;
 
 const activeFilterCount = computed(() => {
-  let count = 0
-  count += filters.makes.length
-  count += filters.models.length
-  count += filters.bodyStyles.length
-  count += filters.exteriorColors.length
-  count += filters.interiorColors.length
-  count += filters.transmissions.length
-  count += filters.drivetrains.length
-  count += filters.fuelTypes.length
-  count += filters.titleStatuses.length
-  if (filters.yearMin != null || filters.yearMax != null) count++
-  if (filters.odometerMin != null || filters.odometerMax != null) count++
-  if (filters.conditionMin != null || filters.conditionMax != null) count++
-  return count
-})
+  let count = 0;
+  count += filters.makes.length;
+  count += filters.models.length;
+  count += filters.bodyStyles.length;
+  count += filters.exteriorColors.length;
+  count += filters.interiorColors.length;
+  count += filters.transmissions.length;
+  count += filters.drivetrains.length;
+  count += filters.fuelTypes.length;
+  count += filters.titleStatuses.length;
+  if (filters.yearMin != null || filters.yearMax != null) count++;
+  if (filters.odometerMin != null || filters.odometerMax != null) count++;
+  if (filters.conditionMin != null || filters.conditionMax != null) count++;
+  return count;
+});
 </script>
 
 <template>
