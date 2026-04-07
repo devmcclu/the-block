@@ -23,7 +23,20 @@ const props = defineProps<{
 const displayName = computed(
   () => `${props.vehicle.year} ${props.vehicle.make} ${props.vehicle.model} ${props.vehicle.trim}`,
 );
-const { ended, timeRemaining } = useAuctionTime(props.vehicle.auction_start);
+const { ended, timeRemaining, urgency } = useAuctionTime(props.vehicle.auction_start);
+
+const timeClass = computed(() => {
+  switch (urgency.value) {
+    case "ended":
+      return "text-destructive";
+    case "urgent":
+      return "text-destructive font-semibold";
+    case "warning":
+      return "text-warning font-semibold";
+    default:
+      return "text-muted-foreground";
+  }
+});
 
 function navigateToVehicle() {
   router.push(`/vehicles/${props.vehicle.external_id}`);
@@ -69,7 +82,7 @@ function navigateToVehicle() {
       </h3>
 
       <div class="flex flex-wrap gap-1">
-        <Badge variant="secondary" class="text-xs">
+        <Badge variant="secondary" class="text-xs capitalize">
           {{ vehicle.body_style }}
         </Badge>
         <Badge variant="secondary" class="text-xs">
@@ -99,10 +112,7 @@ function navigateToVehicle() {
         <p v-if="!ended && vehicle.buy_now_price" class="text-xs text-muted-foreground">
           Buy Now {{ formatCurrency(vehicle.buy_now_price) }}
         </p>
-        <p
-          class="text-xs font-medium"
-          :class="ended ? 'text-destructive' : 'text-muted-foreground'"
-        >
+        <p class="text-xs" :class="timeClass">
           {{ timeRemaining }}
         </p>
       </div>

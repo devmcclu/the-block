@@ -1,145 +1,58 @@
-<p align="center">
-  <img src="docs/the_block_repo.png" alt="The Block challenge hero image" width="960" />
-</p>
-
 # The Block
 
-### A coding challenge from OPENLANE
+## How to Run
 
----
+### Automatic setup
 
-OPENLANE powers one of the world's largest digital marketplaces for used vehicles. Every day, thousands of vehicles move through our platform - inspected, listed, auctioned, and sold. Your job is to interpret what we do and bring a working prototype to life.
+- Install [mise](https://mise.jdx.dev/)
+- Run `mise trust` and `mise install` to install dev tooling
+- Run `npm run prepare` to install dependencies
+- Run `npm run dev` to start dev server with backend and frontend services
 
-We're hiring for a team that builds fast, thinks independently, and takes ownership. This challenge is part of that process.
+### Manual setup
 
-## The Challenge
+- Install [Node.js 24 or newer](https://nodejs.org/en/download/) and [go 1.26 or newer](https://go.dev/dl/)
+- Run `npm run prepare` to install dependencies
+- Run `npm run dev` to start dev server with backend and frontend services
 
-Build the **buyer side of a vehicle auction platform as a web application**. We've included a dataset of 200 vehicles in [`data/vehicles.json`](data/vehicles.json), each listed by a selling dealership.
+## Time Spent
 
-A buyer should be able to browse inventory, inspect vehicle details, and place bids. That's the core experience. How you structure the product and how far you take it is up to you.
+I spent approximately 8 hours on this project.
 
-## Core Requirements
+## Assumptions and Scope
 
-- Browse and search the vehicle inventory
-- Vehicle detail views with specs, condition, damage notes, selling dealership, and photos
-- A bidding experience where a buyer can place bids on vehicles
-- A responsive web experience that works well on desktop and mobile browsers
-- Clear instructions in your README for how to run the project locally
+This program is a mock of what the experience might be like for a user who is logged in. Since there is no authentication, all endpoints are public. This simulates a search page, vehicle info page, and views for placing a bid or buying a vehicle with a history on bids/purchases. This does not handle inventory management, but it does simulate bid increasing and purchase logic in the form of mock UIs and simple endpoints.
 
-## Assumptions You Can Make
+## Stack
 
-- This is a prototype, not a production launch.
-- Target roughly **4-8 hours** of work. If you spend more, that's your call, but we do not expect a fully built marketplace.
-- Use any framework, language, or stack.
-- If you want to align with our current web stack, a React + Vite setup is a good fit. Tailwind is also a reasonable choice, but none of these are required.
-- You may use AI tools and coding assistants, and their use is encouraged. Be ready to explain how you used them, what decisions you made, and what parts of the implementation you would refine.
-- Authentication and user accounts are **not required**.
-- You do **not** need to build seller workflows, checkout, payments, or dealer admin tooling.
-- Auction timestamps in the dataset are synthetic scheduling data. If you want to show countdowns or "live" states, it's fine to normalize them relative to "now" in your prototype.
-- Make reasonable product decisions, document your assumptions, and optimize for clarity over surface area.
+- **Frontend:** Vue, shadcn-vue components, Pinia stores, openapi-typescript and openapi-fetch
+- **Backend:** Go, Fuego Web Framework, GORM ORM
+- **Database:** SQLite
 
-## Minimum Bar
+## What I Built
 
-At a minimum, we want to see:
+I built a simple search and purchase experience that serves as a full stack prototype of a vehicle auction platform. This demonstrates the user flow for searching for vehicles, inspecting vehicle details, and making bids and purchases. The user can filter for details of vehicles, as well as sort by auction details like price and end time.
 
-- Inventory browsing and search
-- A clear vehicle detail experience
-- A bid flow with updated visible state
-- A usable experience on desktop and mobile
-- A repo we can clone and run by following your README
+The goal was to make this project type safe across the whole stack. Since this was not written using a fullstack framework such as Next.js or Ruby on Rails, I used code generation from OpenAPI documents to generate types and interfaces. In the backend, Go generates the OpenAPI spec using the Fuego web framework. The frontend then uses openapi-typescript and openapi-fetch to generate types from the OpenAPI spec and have type safe fetch requests to the API backend. The backend also uses GORM, an ORM, to keep our SQL tables and statements typesafe.
 
-## Stretch Ideas
+The UI is built off of shadcn-vue primatives and Tailwind. Mobile and Desktop views were taken into consideration when building.
 
-These are optional. Only do them if the basics are solid.
+## Notable Decisions
 
-- We care more about judgment than about any specific extra feature.
-- If you go beyond the basics, focus on improvements that make the buyer experience clearer, more useful, or more trustworthy.
-- That could show up in product decisions, UX details, implementation quality, or any other thoughtful extension that fits the timebox.
+I let the backend send all vehicles that matched filters to the frontend. I did not include pagination or virtual list scrolling, which would help improve client performance as the number of vehicles increase.
 
-## What to Submit
+I did not make my filters dynamically show based on current filters. Some filters would have to be dynamic, while other would have to be static due to the nature of what customers might want to search for.
 
-1. **Fork this repo** to your own GitHub account
-2. Complete the challenge work in your fork
-3. Include a **README** in your repo with setup instructions and notable decisions
-4. When you're finished, share the link to your repo with your contact at **OPENLANE**
+Vehicles are not removed from user view if the auction ends or a "purchase" is made. All vehicles are visible to users when no filters are applied.
 
-We've included a [submission template](SUBMISSION.md) if you want a starting point.
+## Testing
 
-We should be able to clone your repo and have it running locally by following your README.
+I added simple unit tests for bidding logic, since it wrote data to the DB and it could easily be verified in a test environment. While I could test search query logic and UI, I figured it was best to skip them due to time constraints and the ability to test them manually as I was working on features.
 
-## Timeline
+## What I'd Do With More Time
 
-You have **5 days** from when you receive this challenge to submit it.
+I would add more test to make sure that features and UI work, especially in more complex situations. I would spend more time refining the UI to make it more impactful, as while I do think the UI is clean it can feel generic at times.
 
-This is not a speed run. We care more about your decisions and tradeoffs than the total number of features.
+Documentation of backend API endpoints could also be improved, as we could embed them in the OpenAPI spec using Fuego. This would help consumers understand the API better and what the expectations are besides input and output schemas.
 
-## What Happens Next
-
-After you submit, we'll schedule a **45-60 minute walkthrough** where you'll screen-share and walk us through what you built. More details are in [`WALKTHROUGH.md`](WALKTHROUGH.md).
-
-## How We Evaluate
-
-We're not checking boxes. Here's what we care about:
-
-| | What we're looking at |
-|---|---|
-| **Product thinking** | Did you make smart decisions about what to build and how it should work? Does the UX make sense? |
-| **Craft** | Does it look and feel intentional? The details matter - design, responsiveness, polish. |
-| **Technical quality** | Is the code clean, well-structured, and easy to follow? |
-| **Judgment** | Did you scope the work well for the time budget and make sensible tradeoffs? |
-| **Workflow** | Can you walk us through how you built it and why? (assessed in the walkthrough) |
-
-## The Data
-
-The vehicle dataset is at [`data/vehicles.json`](data/vehicles.json). Each vehicle includes:
-
-- Lot number, VIN, make, model, year, and trim
-- Specs (engine, transmission, drivetrain, fuel type, odometer)
-- Condition (grade, report, damage notes, title status)
-- Auction details (starting bid, reserve price, buy now price, auction start time)
-- Current bid and bid count (some vehicles already have active bids)
-- Location (city and province)
-- Selling dealership
-- Placeholder image URLs
-
-Here's what a single vehicle looks like:
-
-```json
-{
-  "id": "3cc3b89e-68b0-479e-af39-bca6251ea0b4",
-  "vin": "TRD7L1KS0HNB5X3K3",
-  "year": 2023,
-  "make": "Ford",
-  "model": "Bronco",
-  "trim": "Big Bend",
-  "body_style": "SUV",
-  "exterior_color": "Burgundy",
-  "interior_color": "Beige",
-  "engine": "2.7L EcoBoost V6",
-  "transmission": "automatic",
-  "drivetrain": "4WD",
-  "odometer_km": 47731,
-  "fuel_type": "gasoline",
-  "condition_grade": 3.8,
-  "condition_report": "Average condition. Has some visible wear on high-touch surfaces. Engine and transmission perform within normal parameters.",
-  "damage_notes": [
-    "Scratch on liftgate",
-    "Minor rust on wheel wells",
-    "Paint peeling on roof rack"
-  ],
-  "title_status": "clean",
-  "province": "Ontario",
-  "city": "Toronto",
-  "auction_start": "2026-04-05T14:00:00",
-  "starting_bid": 14500,
-  "reserve_price": 25000,
-  "buy_now_price": null,
-  "images": ["https://placehold.co/800x600?text=2023+Ford+Bronco+Photo+1", "..."],
-  "selling_dealership": "King City Auto",
-  "lot": "A-0043",
-  "current_bid": 22800,
-  "bid_count": 16
-}
-```
-
-The data is synthetic but meant to feel realistic. Use it however you want.
+Migrating to a fullstack framework like Nuxt could give some nice to have features such as SSR, a robust module/plugin system, and using Backend-for-frontend archecture to slim down API requests from the backend if we aren't the ones in control of the API we are consuming. These might introduce latency issues, which is not ideal if you are trying to have bidding be instant, so there are tradeoffs to consider.

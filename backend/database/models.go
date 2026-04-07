@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Vehicle struct {
 	gorm.Model
@@ -77,8 +81,18 @@ type VehicleCreate struct {
 }
 
 type VehicleUpdate struct {
-	CurrentBid *int `json:"current_bid"`
-	BidCount   *int `json:"bid_count"`
+	BidAmount *int `json:"bid_amount" validate:"required"`
+}
+
+type Bid struct {
+	ID          uint      `json:"-" gorm:"primarykey"`
+	CreatedAt   time.Time `json:"bid_time"`
+	UpdatedAt   time.Time `json:"-"`
+	VehicleID   uint      `json:"-"`
+	VehicleExID string    `json:"vehicle_external_id" gorm:"index;not null"`
+	VehicleName string    `json:"vehicle_name"`
+	BidAmount   int       `json:"bid_amount"`
+	IsBuyNow    bool      `json:"is_buy_now"`
 }
 
 type VehicleFilter struct {
@@ -102,6 +116,7 @@ type VehicleFilter struct {
 
 type AuctionConfig struct {
 	MaxAuctionDurationHours int `json:"max_auction_duration_hours"`
+	MinBidIncrement         int `json:"min_bid_increment"`
 }
 
 type VehicleFilterOptions struct {

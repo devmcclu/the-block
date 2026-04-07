@@ -16,6 +16,9 @@ import (
 // maxAuctionDurationHours is the fixed duration for all auctions (30 days).
 const maxAuctionDurationHours = 720
 
+// minBidIncrement is the minimum amount a new bid must exceed the current bid by.
+const minBidIncrement = 100
+
 var validSorts = map[string]bool{
 	"":            true,
 	"price_asc":   true,
@@ -58,8 +61,12 @@ func (rs VehiclesResources) Routes(s *fuego.Server) {
 	fuego.Get(vehiclesGroup, "/config", rs.getConfig)
 	fuego.Get(vehiclesGroup, "/filters", rs.getFilterOptions)
 
+	bidsGroup := fuego.Group(s, "/bids")
+	fuego.Get(bidsGroup, "/", rs.getAllBids)
+
 	fuego.Get(vehiclesGroup, "/{id}", rs.getVehicle)
 	fuego.Put(vehiclesGroup, "/{id}", rs.putVehicle)
+	fuego.Post(vehiclesGroup, "/{id}/buy", rs.buyNowVehicle)
 	fuego.Delete(vehiclesGroup, "/{id}", rs.deleteVehicle)
 }
 
@@ -71,7 +78,7 @@ func mapServiceErr(err error, context string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
 	}
-	if errors.Is(err, ErrBidTooLow) {
+	if errors.Is(err, ErrBidTooLow) || errors.Is(err, ErrAuctionEnded) || errors.Is(err, ErrNoBuyNow) {
 		return fuego.ConflictError{Detail: err.Error()}
 	}
 	return fuego.HTTPError{
@@ -184,7 +191,10 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 }
 
 func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionConfig, error) {
-	return database.AuctionConfig{MaxAuctionDurationHours: maxAuctionDurationHours}, nil
+	return database.AuctionConfig{
+		MaxAuctionDurationHours: maxAuctionDurationHours,
+		MinBidIncrement:         minBidIncrement,
+	}, nil
 }
 
 func (rs VehiclesResources) getFilterOptions(c fuego.ContextNoBody) (database.VehicleFilterOptions, error) {
@@ -239,4 +249,22 @@ func (rs VehiclesResources) deleteVehicle(c fuego.ContextNoBody) (any, error) {
 		return nil, mapServiceErr(err, fmt.Sprintf("delete vehicle %s", c.PathParam("id")))
 	}
 	return result, nil
+}
+
+func (rs VehiclesResources) buyNowVehicle(c fuego.ContextNoBody) (database.Vehicle, error) {
+	id := c.PathParam("id")
+
+	vehicle, err := rs.VehiclesService.BuyNow(id)
+	if err != nil {
+		return database.Vehicle{}, mapServiceErr(err, fmt.Sprintf("buy vehicle %s", id))
+	}
+	return vehicle, nil
+}
+
+func (rs VehiclesResources) getAllBids(c fuego.ContextNoBody) ([]database.Bid, error) {
+	bids, err := rs.VehiclesService.GetAllBids()
+	if err != nil {
+		return nil, mapServiceErr(err, "list bids")
+	}
+	return bids, nil
 }

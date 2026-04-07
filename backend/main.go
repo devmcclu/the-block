@@ -21,7 +21,11 @@ func main() {
 	s := fuego.NewServer()
 
 	vehicleResources := vehicles.VehiclesResources{
-		VehiclesService: vehicles.RealVehiclesService{DB: db},
+		VehiclesService: vehicles.RealVehiclesService{
+			DB:                      db,
+			MaxAuctionDurationHours: 720,
+			MinBidIncrement:         100,
+		},
 	}
 	vehicleResources.Routes(s)
 

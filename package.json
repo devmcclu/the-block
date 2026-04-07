@@ -16,7 +16,8 @@
     "start": "npm-run-all --parallel backend frontend",
     "dev": "npm run start",
     "backend": "cd backend && air -c .air.toml",
-    "frontend": "cd frontend && npm run dev"
+    "frontend": "cd frontend && npm run dev",
+    "setup": "npm install && cd frontend && npm install && cd ../backend && go mod download"
   },
   "devDependencies": {
     "npm-run-all2": "^8.0.4"

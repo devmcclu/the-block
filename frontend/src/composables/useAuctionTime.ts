@@ -1,6 +1,7 @@
 import { type MaybeRefOrGetter, toValue, ref, computed, onUnmounted } from "vue";
 
 const MAX_AUCTION_DURATION_HOURS = ref<number | null>(null);
+const MIN_BID_INCREMENT = ref<number | null>(null);
 let configPromise: Promise<void> | null = null;
 
 export function loadAuctionConfig() {
@@ -11,12 +12,19 @@ export function loadAuctionConfig() {
       if (data?.max_auction_duration_hours !== undefined) {
         MAX_AUCTION_DURATION_HOURS.value = data.max_auction_duration_hours;
       }
+      if (data?.min_bid_increment !== undefined) {
+        MIN_BID_INCREMENT.value = data.min_bid_increment;
+      }
     })().catch((err) => {
       configPromise = null;
       throw err;
     });
   }
   return configPromise;
+}
+
+export function getMinBidIncrement() {
+  return MIN_BID_INCREMENT;
 }
 
 export function useAuctionTime(auctionStart: MaybeRefOrGetter<string | undefined>, live = false) {
@@ -58,5 +66,15 @@ export function useAuctionTime(auctionStart: MaybeRefOrGetter<string | undefined
     return `${minutes}m ${seconds}s`;
   });
 
-  return { ended, timeRemaining };
+  const urgency = computed<"normal" | "warning" | "urgent" | "ended">(() => {
+    if (ended.value) return "ended";
+    if (auctionEnd.value == null) return "normal";
+    const diff = auctionEnd.value - now.value;
+    const oneHour = 1000 * 60 * 60;
+    if (diff <= oneHour) return "urgent";
+    if (diff <= oneHour * 24) return "warning";
+    return "normal";
+  });
+
+  return { ended, timeRemaining, urgency };
 }
