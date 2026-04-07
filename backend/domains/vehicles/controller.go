@@ -9,6 +9,9 @@ import (
 	"github.com/go-fuego/fuego/option"
 )
 
+// maxAuctionDurationHours is the fixed duration for all auctions (30 days).
+const maxAuctionDurationHours = 720
+
 type VehiclesResources struct {
 	VehiclesService VehiclesService
 }
@@ -86,7 +89,7 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 }
 
 func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionConfig, error) {
-	return database.AuctionConfig{MaxAuctionDurationHours: 720}, nil
+	return database.AuctionConfig{MaxAuctionDurationHours: maxAuctionDurationHours}, nil
 }
 
 func (rs VehiclesResources) getFilterOptions(c fuego.ContextNoBody) (database.VehicleFilterOptions, error) {
