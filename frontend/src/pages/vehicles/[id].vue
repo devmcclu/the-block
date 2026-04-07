@@ -40,11 +40,20 @@ const { ended, timeRemaining } = useAuctionTime(auctionStart, true);
 const minBidIncrement = getMinBidIncrement();
 const bidsStore = useBidsStore();
 
+const bidOpen = ref(false);
 const bidAmount = ref<number | undefined>(undefined);
 const bidError = ref<string | null>(null);
+const bidSuccess = ref(false);
 const bidLoading = ref(false);
 const buyNowOpen = ref(false);
 const buyNowLoading = ref(false);
+
+function openBidDialog() {
+  bidAmount.value = undefined;
+  bidError.value = null;
+  bidSuccess.value = false;
+  bidOpen.value = true;
+}
 
 const reserveMet = computed(() => {
   if (!vehicle.value) return false;
@@ -98,10 +107,8 @@ async function placeBid() {
         bidTime: new Date().toISOString(),
         isBuyNow: false,
       });
-      toast.success("Bid placed", {
-        description: `Your bid of ${formatCurrency(bidAmount.value)} has been placed.`,
-      });
-      bidAmount.value = undefined;
+      bidSuccess.value = true;
+      bidError.value = null;
     }
   } catch {
     bidError.value = "Unable to connect to server";
@@ -332,31 +339,10 @@ onMounted(async () => {
             <!-- Bid Actions -->
             <div v-if="!ended" class="mt-4 space-y-3">
               <Separator />
-              <div class="space-y-2">
-                <label class="text-sm font-medium">Place a Bid</label>
-                <div class="flex gap-2">
-                  <Input
-                    v-model.number="bidAmount"
-                    type="number"
-                    :min="minimumBid"
-                    :placeholder="`$${minimumBid.toLocaleString()}`"
-                    class="flex-1"
-                    @keyup.enter="placeBid"
-                  />
-                  <Button :disabled="bidLoading || !bidAmount" @click="placeBid">
-                    <Icon
-                      v-if="bidLoading"
-                      icon="hugeicons:loading-03"
-                      class="h-4 w-4 mr-2 animate-spin"
-                    />
-                    Place Bid
-                  </Button>
-                </div>
-                <p class="text-xs text-muted-foreground">
-                  Minimum bid: {{ formatCurrency(minimumBid) }}
-                </p>
-                <p v-if="bidError" class="text-xs text-destructive">{{ bidError }}</p>
-              </div>
+              <Button class="w-full" @click="openBidDialog">
+                <Icon icon="hugeicons:auction" class="h-4 w-4 mr-2" />
+                Place Bid
+              </Button>
 
               <Button
                 v-if="vehicle.buy_now_price != null"
@@ -401,6 +387,88 @@ onMounted(async () => {
       <p class="text-lg font-medium text-destructive">{{ error }}</p>
       <p class="text-sm text-muted-foreground mt-1">Try refreshing the page</p>
     </div>
+
+    <!-- Place Bid Dialog -->
+    <Dialog v-model:open="bidOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Place a Bid</DialogTitle>
+          <DialogDescription>
+            Enter your bid for this vehicle.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div v-if="vehicle" class="space-y-4 py-2">
+          <div class="flex items-center gap-4">
+            <div
+              v-if="vehicle.images && vehicle.images.length > 0"
+              class="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted"
+            >
+              <img
+                :src="vehicle.images?.[0]?.url"
+                :alt="vehicleName"
+                class="h-full w-full object-cover"
+              />
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold truncate">{{ vehicleName }}</p>
+              <p class="text-sm text-muted-foreground">
+                Current bid: {{ formatCurrency(vehicle.current_bid) }}
+                &middot; {{ vehicle.bid_count }} {{ vehicle.bid_count === 1 ? "bid" : "bids" }}
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <!-- Success State -->
+          <div v-if="bidSuccess" class="text-center space-y-3 py-2">
+            <Icon icon="hugeicons:checkmark-circle-02" class="mx-auto h-10 w-10 text-green-500" />
+            <div>
+              <p class="font-semibold">Bid placed successfully</p>
+              <p class="text-sm text-muted-foreground">
+                Your bid of {{ formatCurrency(bidAmount) }} has been recorded.
+              </p>
+            </div>
+          </div>
+
+          <!-- Bid Input State -->
+          <div v-else class="space-y-3">
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Your Bid</label>
+              <Input
+                v-model.number="bidAmount"
+                type="number"
+                :min="minimumBid"
+                :placeholder="`$${minimumBid.toLocaleString()}`"
+                @keyup.enter="placeBid"
+              />
+              <p class="text-xs text-muted-foreground">
+                Minimum bid: {{ formatCurrency(minimumBid) }}
+              </p>
+              <p v-if="bidError" class="text-xs text-destructive">{{ bidError }}</p>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter class="gap-2 sm:gap-0">
+          <template v-if="bidSuccess">
+            <Button @click="bidOpen = false">Done</Button>
+          </template>
+          <template v-else>
+            <Button variant="outline" @click="bidOpen = false">Cancel</Button>
+            <Button :disabled="bidLoading || !bidAmount" @click="placeBid">
+              <Icon
+                v-if="bidLoading"
+                icon="hugeicons:loading-03"
+                class="h-4 w-4 mr-2 animate-spin"
+              />
+              Place Bid
+            </Button>
+          </template>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <!-- Buy Now Dialog -->
     <Dialog v-model:open="buyNowOpen">
