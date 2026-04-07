@@ -12,7 +12,7 @@ const { vehicles, loading } = storeToRefs(store);
   <!-- Loading State -->
   <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
     <div v-for="i in 6" :key="i" class="space-y-3">
-      <Skeleton class="aspect-[4/3] w-full rounded-lg" />
+      <Skeleton class="aspect-4/3 w-full rounded-lg" />
       <Skeleton class="h-4 w-3/4" />
       <Skeleton class="h-3 w-1/2" />
     </div>

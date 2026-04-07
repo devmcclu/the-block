@@ -25,9 +25,9 @@ function navigateToVehicle() {
 
 function formatCurrency(amount: number | undefined) {
   if (amount == null) return "";
-  return new Intl.NumberFormat("en-CA", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "CAD",
+    currency: "USD",
     maximumFractionDigits: 0,
   }).format(amount);
 }
