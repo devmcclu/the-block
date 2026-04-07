@@ -3,6 +3,7 @@ package vehicles
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/google/uuid"
@@ -22,7 +23,9 @@ type VehiclesService interface {
 }
 
 type RealVehiclesService struct {
-	DB *gorm.DB
+	DB                      *gorm.DB
+	MaxAuctionDurationHours int
+	MinBidIncrement         int
 }
 
 func (s RealVehiclesService) GetVehicle(id string) (database.Vehicle, error) {
@@ -207,19 +210,29 @@ func (s RealVehiclesService) UpdateVehicle(id string, input database.VehicleUpda
 			return err
 		}
 
-		if input.CurrentBid != nil {
-			result := tx.Model(&vehicle).
-				Where("current_bid < ?", *input.CurrentBid).
-				Updates(map[string]any{
-					"current_bid": *input.CurrentBid,
-					"bid_count":   gorm.Expr("bid_count + 1"),
-				})
-			if result.Error != nil {
-				return result.Error
-			}
-			if result.RowsAffected == 0 {
-				return fmt.Errorf("%w: %d", ErrBidTooLow, *input.CurrentBid)
-			}
+		auctionStart, err := time.Parse("2006-01-02T15:04:05", vehicle.AuctionStart)
+		if err != nil {
+			return fmt.Errorf("invalid auction_start: %w", err)
+		}
+		auctionEnd := auctionStart.Add(time.Duration(s.MaxAuctionDurationHours) * time.Hour)
+		if time.Now().After(auctionEnd) {
+			return fmt.Errorf("auction has ended")
+		}
+
+		minBid := vehicle.StartingBid
+		if vehicle.BidCount > 0 {
+			minBid = vehicle.CurrentBid + s.MinBidIncrement
+		}
+		if input.BidAmount < minBid {
+			return fmt.Errorf("bid of %d is below the minimum of %d", input.BidAmount, minBid)
+		}
+
+		result := tx.Model(&vehicle).Updates(map[string]any{
+			"current_bid": input.BidAmount,
+			"bid_count":   gorm.Expr("bid_count + 1"),
+		})
+		if result.Error != nil {
+			return result.Error
 		}
 
 		return nil

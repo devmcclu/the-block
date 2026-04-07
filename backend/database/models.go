@@ -77,8 +77,7 @@ type VehicleCreate struct {
 }
 
 type VehicleUpdate struct {
-	CurrentBid *int `json:"current_bid"`
-	BidCount   *int `json:"bid_count"`
+	BidAmount int `json:"bid_amount"`
 }
 
 type VehicleFilter struct {
@@ -102,6 +101,7 @@ type VehicleFilter struct {
 
 type AuctionConfig struct {
 	MaxAuctionDurationHours int `json:"max_auction_duration_hours"`
+	MinBidIncrement         int `json:"min_bid_increment"`
 }
 
 type VehicleFilterOptions struct {

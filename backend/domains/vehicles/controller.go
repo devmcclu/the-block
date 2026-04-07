@@ -6,6 +6,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/devmcclu/the-block/backend/database"
 	"github.com/go-fuego/fuego"
@@ -15,6 +16,9 @@ import (
 
 // maxAuctionDurationHours is the fixed duration for all auctions (30 days).
 const maxAuctionDurationHours = 720
+
+// minBidIncrement is the minimum amount a new bid must exceed the current bid by.
+const minBidIncrement = 100
 
 var validSorts = map[string]bool{
 	"":            true,
@@ -71,7 +75,7 @@ func mapServiceErr(err error, context string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fuego.NotFoundError{Detail: fmt.Sprintf("%s: not found", context)}
 	}
-	if errors.Is(err, ErrBidTooLow) {
+	if errors.Is(err, ErrBidTooLow) || strings.HasPrefix(err.Error(), "auction has ended") {
 		return fuego.ConflictError{Detail: err.Error()}
 	}
 	return fuego.HTTPError{
@@ -184,7 +188,10 @@ func (rs VehiclesResources) getAllVehicles(c fuego.ContextNoBody) ([]database.Ve
 }
 
 func (rs VehiclesResources) getConfig(c fuego.ContextNoBody) (database.AuctionConfig, error) {
-	return database.AuctionConfig{MaxAuctionDurationHours: maxAuctionDurationHours}, nil
+	return database.AuctionConfig{
+		MaxAuctionDurationHours: maxAuctionDurationHours,
+		MinBidIncrement:         minBidIncrement,
+	}, nil
 }
 
 func (rs VehiclesResources) getFilterOptions(c fuego.ContextNoBody) (database.VehicleFilterOptions, error) {

@@ -3,10 +3,12 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/lib/api/client";
 import type { Vehicle } from "@/stores/vehicles";
+import { useBidsStore } from "@/stores/bids";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Carousel,
   CarouselContent,
@@ -14,9 +16,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Icon } from "@iconify/vue";
-import { useAuctionTime, loadAuctionConfig } from "@/composables/useAuctionTime";
+import { useAuctionTime, loadAuctionConfig, getMinBidIncrement } from "@/composables/useAuctionTime";
 import { formatCurrency, formatOdometer } from "@/lib/format";
+import { toast } from "vue-sonner";
 
 const route = useRoute("/vehicles/[id]");
 const vehicle = ref<Vehicle | null>(null);
@@ -26,6 +37,14 @@ const error = ref<string | null>(null);
 
 const auctionStart = computed(() => vehicle.value?.auction_start);
 const { ended, timeRemaining } = useAuctionTime(auctionStart, true);
+const minBidIncrement = getMinBidIncrement();
+const bidsStore = useBidsStore();
+
+const bidAmount = ref<number | undefined>(undefined);
+const bidError = ref<string | null>(null);
+const bidLoading = ref(false);
+const buyNowOpen = ref(false);
+const buyNowLoading = ref(false);
 
 const reserveMet = computed(() => {
   if (!vehicle.value) return false;
@@ -39,6 +58,93 @@ const bidLabel = computed(() => {
   if (!ended.value) return "Current Bid";
   return reserveMet.value ? "Final Price" : "Final Bid";
 });
+
+const minimumBid = computed(() => {
+  if (!vehicle.value) return 0;
+  if (!vehicle.value.bid_count || vehicle.value.bid_count === 0) {
+    return vehicle.value.starting_bid ?? 0;
+  }
+  return (vehicle.value.current_bid ?? 0) + (minBidIncrement.value ?? 100);
+});
+
+const vehicleName = computed(() => {
+  if (!vehicle.value) return "";
+  return `${vehicle.value.year} ${vehicle.value.make} ${vehicle.value.model} ${vehicle.value.trim}`.trim();
+});
+
+async function placeBid() {
+  if (!vehicle.value || !bidAmount.value) return;
+  if (bidAmount.value < minimumBid.value) {
+    bidError.value = `Bid must be at least ${formatCurrency(minimumBid.value)}`;
+    return;
+  }
+
+  bidError.value = null;
+  bidLoading.value = true;
+  try {
+    const id = vehicle.value.external_id!;
+    const { data, error: fetchError } = await api.PUT("/vehicles/{id}", {
+      params: { path: { id } },
+      body: { bid_amount: bidAmount.value },
+    });
+    if (fetchError) {
+      bidError.value = (fetchError as { detail?: string }).detail ?? "Failed to place bid";
+    } else if (data) {
+      vehicle.value = data;
+      bidsStore.addBid({
+        vehicleId: id,
+        vehicleName: vehicleName.value,
+        bidAmount: bidAmount.value,
+        bidTime: new Date().toISOString(),
+        isBuyNow: false,
+      });
+      toast.success("Bid placed", {
+        description: `Your bid of ${formatCurrency(bidAmount.value)} has been placed.`,
+      });
+      bidAmount.value = undefined;
+    }
+  } catch {
+    bidError.value = "Unable to connect to server";
+  } finally {
+    bidLoading.value = false;
+  }
+}
+
+async function confirmBuyNow() {
+  if (!vehicle.value || vehicle.value.buy_now_price == null) return;
+  const price = vehicle.value.buy_now_price;
+
+  buyNowLoading.value = true;
+  try {
+    const id = vehicle.value.external_id!;
+    const { data, error: fetchError } = await api.PUT("/vehicles/{id}", {
+      params: { path: { id } },
+      body: { bid_amount: price },
+    });
+    if (fetchError) {
+      toast.error("Purchase failed", {
+        description: (fetchError as { detail?: string }).detail ?? "Unable to complete purchase",
+      });
+    } else if (data) {
+      vehicle.value = data;
+      bidsStore.addBid({
+        vehicleId: id,
+        vehicleName: vehicleName.value,
+        bidAmount: price,
+        bidTime: new Date().toISOString(),
+        isBuyNow: true,
+      });
+      toast.success("Purchase complete", {
+        description: `You purchased this vehicle for ${formatCurrency(price)}.`,
+      });
+      buyNowOpen.value = false;
+    }
+  } catch {
+    toast.error("Purchase failed", { description: "Unable to connect to server" });
+  } finally {
+    buyNowLoading.value = false;
+  }
+}
 
 onMounted(async () => {
   try {
@@ -222,6 +328,46 @@ onMounted(async () => {
                 </dd>
               </div>
             </dl>
+
+            <!-- Bid Actions -->
+            <div v-if="!ended" class="mt-4 space-y-3">
+              <Separator />
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Place a Bid</label>
+                <div class="flex gap-2">
+                  <Input
+                    v-model.number="bidAmount"
+                    type="number"
+                    :min="minimumBid"
+                    :placeholder="`$${minimumBid.toLocaleString()}`"
+                    class="flex-1"
+                    @keyup.enter="placeBid"
+                  />
+                  <Button :disabled="bidLoading || !bidAmount" @click="placeBid">
+                    <Icon
+                      v-if="bidLoading"
+                      icon="hugeicons:loading-03"
+                      class="h-4 w-4 mr-2 animate-spin"
+                    />
+                    Place Bid
+                  </Button>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                  Minimum bid: {{ formatCurrency(minimumBid) }}
+                </p>
+                <p v-if="bidError" class="text-xs text-destructive">{{ bidError }}</p>
+              </div>
+
+              <Button
+                v-if="vehicle.buy_now_price != null"
+                class="w-full"
+                variant="secondary"
+                @click="buyNowOpen = true"
+              >
+                <Icon icon="hugeicons:shopping-bag-02" class="h-4 w-4 mr-2" />
+                Buy Now &mdash; {{ formatCurrency(vehicle.buy_now_price) }}
+              </Button>
+            </div>
           </div>
 
           <!-- Condition Report -->
@@ -255,5 +401,69 @@ onMounted(async () => {
       <p class="text-lg font-medium text-destructive">{{ error }}</p>
       <p class="text-sm text-muted-foreground mt-1">Try refreshing the page</p>
     </div>
+
+    <!-- Buy Now Dialog -->
+    <Dialog v-model:open="buyNowOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Buy Now</DialogTitle>
+          <DialogDescription>
+            Complete your purchase of this vehicle.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div v-if="vehicle" class="space-y-4 py-2">
+          <div class="flex items-center gap-4">
+            <div
+              v-if="vehicle.images && vehicle.images.length > 0"
+              class="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted"
+            >
+              <img
+                :src="vehicle.images?.[0]?.url"
+                :alt="vehicleName"
+                class="h-full w-full object-cover"
+              />
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold truncate">{{ vehicleName }}</p>
+              <p class="text-sm text-muted-foreground">Lot {{ vehicle.lot }}</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-muted-foreground">Purchase Price</span>
+              <span class="text-lg font-bold">
+                {{ formatCurrency(vehicle.buy_now_price) }}
+              </span>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div class="space-y-1">
+            <p class="text-sm font-medium">Payment Method</p>
+            <div class="flex items-center gap-2 rounded-md border p-3">
+              <Icon icon="hugeicons:credit-card" class="h-5 w-5 text-muted-foreground" />
+              <span class="text-sm">Visa ending in 4242</span>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter class="gap-2 sm:gap-0">
+          <Button variant="outline" @click="buyNowOpen = false">Cancel</Button>
+          <Button :disabled="buyNowLoading" @click="confirmBuyNow">
+            <Icon
+              v-if="buyNowLoading"
+              icon="hugeicons:loading-03"
+              class="h-4 w-4 mr-2 animate-spin"
+            />
+            Confirm Purchase
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </main>
 </template>

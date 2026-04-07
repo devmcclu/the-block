@@ -159,6 +159,7 @@ export interface components {
         /** @description AuctionConfig schema */
         AuctionConfig: {
             max_auction_duration_hours?: number;
+            min_bid_increment?: number;
         };
         /** @description HTTPError schema */
         HTTPError: {
@@ -276,8 +277,7 @@ export interface components {
         };
         /** @description VehicleUpdate schema */
         VehicleUpdate: {
-            bid_count?: number | null;
-            current_bid?: number | null;
+            bid_amount?: number;
         };
         /** @description unknown-interface schema */
         "unknown-interface": unknown;
@@ -323,7 +323,7 @@ export interface operations {
                 condition_min?: string;
                 /** @description Maximum condition grade */
                 condition_max?: string;
-                /** @description Sort order: price_asc, price_desc, year_desc, year_asc */
+                /** @description Sort order: price_asc, price_desc, year_asc, year_desc, bids_asc, bids_desc, ending_soon, ending_last */
                 sort?: string;
             };
             header?: {
