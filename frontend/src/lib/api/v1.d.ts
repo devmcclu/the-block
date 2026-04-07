@@ -277,7 +277,7 @@ export interface components {
         };
         /** @description VehicleUpdate schema */
         VehicleUpdate: {
-            bid_amount?: number;
+            bid_amount: number | null;
         };
         /** @description unknown-interface schema */
         "unknown-interface": unknown;

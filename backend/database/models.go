@@ -77,7 +77,7 @@ type VehicleCreate struct {
 }
 
 type VehicleUpdate struct {
-	BidAmount int `json:"bid_amount"`
+	BidAmount *int `json:"bid_amount" validate:"required"`
 }
 
 type VehicleFilter struct {
