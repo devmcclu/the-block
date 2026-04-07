@@ -82,7 +82,7 @@ function navigateToVehicle() {
       </h3>
 
       <div class="flex flex-wrap gap-1">
-        <Badge variant="secondary" class="text-xs">
+        <Badge variant="secondary" class="text-xs capitalize">
           {{ vehicle.body_style }}
         </Badge>
         <Badge variant="secondary" class="text-xs">

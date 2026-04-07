@@ -232,7 +232,7 @@ onMounted(async () => {
           {{ vehicle.city }}, {{ vehicle.province }} &middot; Lot {{ vehicle.lot }}
         </p>
         <div class="flex flex-wrap gap-1.5 mt-3">
-          <Badge variant="secondary">{{ vehicle.body_style }}</Badge>
+          <Badge variant="secondary" class="capitalize">{{ vehicle.body_style }}</Badge>
           <Badge variant="secondary">{{ vehicle.drivetrain }}</Badge>
           <Badge variant="secondary" class="capitalize">{{ vehicle.fuel_type }}</Badge>
           <Badge variant="secondary" class="capitalize">{{ vehicle.transmission }}</Badge>
@@ -482,10 +482,7 @@ onMounted(async () => {
         <div v-if="vehicle" class="space-y-4 py-2">
           <!-- Success State -->
           <div v-if="buyNowSuccess" class="text-center space-y-3 py-4">
-            <Icon
-              icon="hugeicons:checkmark-circle-02"
-              class="mx-auto h-12 w-12 text-green-500"
-            />
+            <Icon icon="hugeicons:checkmark-circle-02" class="mx-auto h-12 w-12 text-green-500" />
             <div>
               <p class="text-lg font-semibold">Purchase Complete</p>
               <p class="text-sm text-muted-foreground mt-1">

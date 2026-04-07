@@ -151,7 +151,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="style in filterOptions.body_styles"
             :key="style"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('bodyStyles', style)"
@@ -171,7 +171,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="color in filterOptions.exterior_colors"
             :key="color"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('exteriorColors', color)"
@@ -191,7 +191,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="color in filterOptions.interior_colors"
             :key="color"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('interiorColors', color)"
@@ -211,7 +211,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="trans in filterOptions.transmissions"
             :key="trans"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('transmissions', trans)"
@@ -231,7 +231,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="dt in filterOptions.drivetrains"
             :key="dt"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('drivetrains', dt)"
@@ -279,7 +279,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="fuel in filterOptions.fuel_types"
             :key="fuel"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('fuelTypes', fuel)"
@@ -331,7 +331,7 @@ function isChecked(key: ArrayFilterKey, value: string) {
           <label
             v-for="status in filterOptions.title_statuses"
             :key="status"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex items-center gap-2 cursor-pointer capitalize"
           >
             <Checkbox
               :model-value="isChecked('titleStatuses', status)"
