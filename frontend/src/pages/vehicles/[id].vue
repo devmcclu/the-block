@@ -21,6 +21,7 @@ import { formatCurrency, formatOdometer } from "@/lib/format";
 const route = useRoute("/vehicles/[id]");
 const vehicle = ref<Vehicle | null>(null);
 const loading = ref(true);
+const notFound = ref(false);
 const error = ref<string | null>(null);
 
 const auctionStart = computed(() => vehicle.value?.auction_start);
@@ -55,7 +56,11 @@ onMounted(async () => {
       params: { path: { id } },
     });
     if (fetchError) {
-      error.value = response?.status === 404 ? "Vehicle not found" : "Unable to connect to server";
+      if (response?.status === 404) {
+        notFound.value = true;
+      } else {
+        error.value = "Unable to connect to server";
+      }
     } else if (data) {
       vehicle.value = data;
     }
@@ -240,15 +245,15 @@ onMounted(async () => {
       </div>
     </template>
 
+    <!-- Not Found -->
+    <div v-else-if="notFound" class="py-16 text-center">
+      <p class="text-lg font-medium text-muted-foreground">Vehicle not found</p>
+    </div>
+
     <!-- Error State -->
     <div v-else-if="error" class="py-16 text-center">
       <p class="text-lg font-medium text-destructive">{{ error }}</p>
       <p class="text-sm text-muted-foreground mt-1">Try refreshing the page</p>
-    </div>
-
-    <!-- Not Found -->
-    <div v-else class="py-16 text-center">
-      <p class="text-lg font-medium text-muted-foreground">Vehicle not found</p>
     </div>
   </main>
 </template>
