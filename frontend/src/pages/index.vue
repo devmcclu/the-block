@@ -61,6 +61,8 @@ watch(sort, () => store.fetchVehicles());
                 <SelectItem value="year_asc">Oldest</SelectItem>
                 <SelectItem value="bids_desc">Most Bids</SelectItem>
                 <SelectItem value="bids_asc">Fewest Bids</SelectItem>
+                <SelectItem value="ending_soon">Ending Soon</SelectItem>
+                <SelectItem value="ending_last">Ending Last</SelectItem>
               </SelectContent>
             </Select>
             <MobileFilterSheet />

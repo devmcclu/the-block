@@ -89,6 +89,10 @@ func (s RealVehiclesService) GetAllVehicles(filters database.VehicleFilter) ([]d
 		q = q.Order("bid_count DESC")
 	case "bids_asc":
 		q = q.Order("bid_count ASC")
+	case "ending_soon":
+		q = q.Order("auction_start ASC")
+	case "ending_last":
+		q = q.Order("auction_start DESC")
 	}
 
 	err := q.Find(&vehicles).Error
